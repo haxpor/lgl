@@ -37,5 +37,5 @@ You're done. Anyway to just quickly show an empty window, you can skip step 2, b
 
 # License
 
-All non-source asset from learnopengl.com.
-Source code is adapted from original.
+All non-source asset from learnopengl.com, thus adhere to its original.
+Source code is adapted from original under MIT.
