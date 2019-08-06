@@ -1,8 +1,28 @@
-# Compile
+# Build
 
-Tested on Linux only (anyway should be slight effort to build it on Windows and macOS).
+To build demo programs, use `make.sh` script to do it as follows.
 
-Use `./build.sh <demo-file>` to build in `src/` directory. Then execute it with `./a.out`.
+`./make.sh build <target .cpp file>`
+
+for example
+
+`./make.sh build Shader.cpp`
+
+it will produce `a.out` file, run it with `./a.out`.
+
+# make.sh
+
+There is other functionality `make.sh` offers.
+
+It's based on `./make.sh <command> <optional-parameters>`.
+
+## List all demo programs
+
+Use `./make.sh list` to list all demo programs along with its corresponding description.
+
+## Help
+
+Use `./make.sh help` to show help text.
 
 # Dependencies
 
@@ -21,7 +41,7 @@ All common source files/headers are inside `src/core`.
 
 Demo programs are a single source file for each, and located in `src/*.cpp`.
 
-At the near end of completion of study (thus this project), `CMake` build script will be added for convenience in building all demo programs. For now, it makes no sense to incur having it while studying. Modify `build.sh` as needed for your system to make it work for the time being.
+At the near end of completion of study (thus this project), `CMake` build script will be added for convenience in building all demo programs. For now, it makes no sense to incur having it while studying. Modify `make.sh` as needed for your system to make it work for the time being.
 
 # How to create a new demo program
 
