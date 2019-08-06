@@ -21,6 +21,8 @@ All common source files/headers are inside `src/core`.
 
 Demo programs are a single source file for each, and located in `src/*.cpp`.
 
+At the near end of completion of study (thus this project), `CMake` build script will be added for convenience in building all demo programs. For now, it makes no sense to incur having it while studying. Modify `build.sh` as needed for your system to make it work for the time being.
+
 # How to create a new demo program
 
 See `src/Barebone.cpp` as example.
