@@ -4,6 +4,17 @@ Tested on Linux only (anyway should be slight effort to build it on Windows and 
 
 Use `./build.sh <demo-file>` to build in `src/` directory. Then execute it with `./a.out`.
 
+# Dependencies
+
+Included in `external/` directory
+
+* `glad` - generated from its webservice for OpenGL 3.3 API, Core profile (subject to be gradually added more API support later if need)
+* `stb_image` - for loading image asset
+
+Others
+
+* `glfw` - for window stuff
+
 # Note
 
 All common source files/headers are inside `src/core`.
