@@ -1,6 +1,6 @@
 /*
 ====================
-Uniforms, More vertex attributes
+Uniforms
 ====================
 */
 #include "Base.h"
