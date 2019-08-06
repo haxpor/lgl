@@ -18,13 +18,13 @@ class Demo : public lgl::App
 public:
     void UserSetup() override {
         // compile vertex shader
-        GL_uint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertexShader, 1, &VS_CODE, NULL);
         glCompileShader(vertexShader);
         lgl::util::PrintGLShaderErrorIfAny(vertexShader);
 
         // compile fragment shader
-        GL_uint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(fragmentShader, 1, &FS_CODE, NULL);
         glCompileShader(fragmentShader);
         lgl::util::PrintGLShaderErrorIfAny(fragmentShader);
@@ -82,9 +82,9 @@ void main()
 }
 )";
 
-    GL_uint VBO;
-    GL_uint VAO;
-    GL_uint shaderProgram;
+    GLuint VBO;
+    GLuint VAO;
+    GLuint shaderProgram;
 };
 
 int main(int argc, char* argv[])

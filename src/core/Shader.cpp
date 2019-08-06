@@ -13,11 +13,11 @@ int Shader::Build(const char* vertexPath, const char* fragmentPath)
 {
     util::FileReader fileReader;
     bool error = false;
-    GL_int glError = 0;
+    GLint glError = 0;
 
     // VERTEX SHADER
     // read in vertex shader from source
-    GL_uint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     std::string vsCode = fileReader.ReadAll(vertexPath, error);
     if (error)
     {
@@ -35,7 +35,7 @@ int Shader::Build(const char* vertexPath, const char* fragmentPath)
     }
 
     // FRAGMENT SHADER
-    GL_uint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     std::string fsCode = fileReader.ReadAll(fragmentPath, error);
     if (error)
     {

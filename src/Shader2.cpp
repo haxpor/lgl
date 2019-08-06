@@ -24,13 +24,13 @@ class Demo : public lgl::App
 public:
     void UserSetup() override {
         // compile vertex shader
-        GL_uint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertexShader, 1, &VS_CODE, NULL);
         glCompileShader(vertexShader);
         lgl::util::PrintGLShaderErrorIfAny(vertexShader);
 
         // compile fragment shader
-        GL_uint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(fragmentShader, 1, &FS_CODE, NULL);
         glCompileShader(fragmentShader);
         lgl::util::PrintGLShaderErrorIfAny(fragmentShader);
@@ -52,7 +52,7 @@ public:
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
             // prepare vertex data
-            GL_uint VBO;
+            GLuint VBO;
             glGenBuffers(1, &VBO);
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -65,7 +65,7 @@ public:
             glEnableVertexAttribArray(1);
 
             // prepare of EBO (Element Buffer Object) for indexed drawing
-            GL_uint EBO;
+            GLuint EBO;
             glGenBuffers(1, &EBO);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
@@ -125,8 +125,8 @@ void main()
 )";
 
     bool isFirstFrameWaitDone;
-    GL_uint VAO;
-    GL_uint shaderProgram;
+    GLuint VAO;
+    GLuint shaderProgram;
 };
 
 int main(int argc, char* argv[])

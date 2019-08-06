@@ -7,14 +7,13 @@
 #include <sstream>
 #include "Bits.h"
 #include "Wrapped_GL.h"
-#include "GL_Types.h"
 
 // This is not thread-safe as with the nature of OpenGL's fetching error status.
 OUTER_NAMESPACE(lgl)
 namespace util
 {
 const int ERROR_BUFFER = 512;
-extern GL_int status;
+extern GLint status;
 extern char errLog[ERROR_BUFFER];
 
 /**
@@ -26,7 +25,7 @@ extern char errLog[ERROR_BUFFER];
  * \param shader Shader object
  * \return Return error status code in negative if error occurs, otherwise return zero for success.
  */
-inline GL_int PrintGLShaderErrorIfAny(const GL_uint shader)
+inline GLint PrintGLShaderErrorIfAny(const GLuint shader)
 {
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);  
 
@@ -50,7 +49,7 @@ inline GL_int PrintGLShaderErrorIfAny(const GL_uint shader)
  * \param shaderProgram Shader program object
  * \return Return error status code in negative if error occurs, otherwise return zero for success.
  */
-inline GL_int PrintGLShaderProgramErrorIfAny(const GL_uint shaderProgram)
+inline GLint PrintGLShaderProgramErrorIfAny(const GLuint shaderProgram)
 {
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
     if (!status)

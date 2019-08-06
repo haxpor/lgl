@@ -33,7 +33,7 @@ public:
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
             // prepare vertex data
-            GL_uint VBO;
+            GLuint VBO;
             glGenBuffers(1, &VBO);
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -46,7 +46,7 @@ public:
             glEnableVertexAttribArray(1);
 
             // prepare of EBO (Element Buffer Object) for indexed drawing
-            GL_uint EBO;
+            GLuint EBO;
             glGenBuffers(1, &EBO);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
@@ -85,7 +85,7 @@ public:
 private:
     bool isFirstFrameWaitDone;
     lgl::Shader basicShader;
-    GL_uint VAO;
+    GLuint VAO;
 };
 
 int main(int argc, char* argv[])

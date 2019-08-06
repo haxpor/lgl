@@ -2,7 +2,7 @@
 #define _SHADER_H_
 
 #include "Bits.h"
-#include "GL_Types.h"
+#include "Wrapped_GL.h"
 
 namespace lgl
 {
@@ -24,7 +24,7 @@ public:
     void Use() const;
 
 private:
-    GL_uint program;
+    GLuint program;
 };
 
 };
