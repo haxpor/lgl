@@ -1,6 +1,6 @@
 # Build
 
-To build demo programs, use `make.sh` script to do it as follows.
+To build demo programs, `cd` to `src/` directory, then use `make.sh` script to do it as follows.
 
 `./make.sh build <target .cpp file>`
 
