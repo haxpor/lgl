@@ -23,6 +23,12 @@ public:
      */
     void Use() const;
 
+    /**
+     * Destory states and clean up memory used by this shader.
+     * Only call this after shader has been build successfully, otherwise undefine behavior as program object number can be anything.
+     */
+    void Destroy();
+
 private:
     GLuint program;
 };

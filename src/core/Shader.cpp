@@ -78,3 +78,8 @@ void Shader::Use() const
 {
     glUseProgram(program);    
 }
+
+void Shader::Destroy()
+{
+    glDeleteProgram(program);
+}
