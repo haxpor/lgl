@@ -1,6 +1,8 @@
 /*
 ====================
 Based on Shader2.cpp but use FileReader to read in shader source codes
+
+Shader code accepts uniform as tint-color, but for application it uses it to fade in/out periodically.
 ====================
 */
 #include "Base.h"
@@ -25,7 +27,7 @@ class Demo : public lgl::App
 public:
     void UserSetup() override {
         // create shader program and build it immediately
-        int result = basicShader.Build("../data/basic.vert", "../data/basic.frag");
+        int result = basicShader.Build("../data/color.vert", "../data/color.frag");
         LGL_ERROR_QUIT(result, "Error creating basic shader");
 
         // wrap vertex attrib configurations via VAO
@@ -58,11 +60,11 @@ public:
         if (isFirstFrameWaitDone)
         {
             double currentTicks = glfwGetTime();
-            double greenValue = (std::sin(currentTicks) / 2.0f) + 0.5f;
+            double fade = (std::sin(currentTicks) / 2.0f) + 0.5f;
 
             // skip calling to glUseProgram(shaderProgram) as we wait for 1 frame
             // shaderProgram by now is set to be active, so we save subsequent call from now on
-            glUniform4f(0, 0.0f, greenValue, 0.0f, 1.0f);
+            glUniform4f(0, fade, fade, fade, 1.0f);
         }
     }
 
