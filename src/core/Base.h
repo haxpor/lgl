@@ -23,6 +23,7 @@ namespace lgl
     public:
         int Setup(const char* title);
         void Start();
+        GLFWwindow* GetGLFWWindow() const;
 
         // ------------ user-callback ---------------- //
         virtual void UserFramebufferSizeCallback(const int width, const int height);
@@ -47,6 +48,11 @@ namespace lgl
         double prevTicks;
     };
 };
+
+inline GLFWwindow* lgl::App::GetGLFWWindow() const
+{
+    return holder.window;
+}
 
 inline int lgl::App::Setup(const char* title)
 {
