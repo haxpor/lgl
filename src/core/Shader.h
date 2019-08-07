@@ -3,6 +3,7 @@
 
 #include "Bits.h"
 #include "Wrapped_GL.h"
+#include "Error.h"
 
 namespace lgl
 {
@@ -29,13 +30,18 @@ public:
      */
     void Destroy();
 
-    /**
-     * Set uniform value at location.
-     *
-     * \param location Location of uniform variable inside shader code.
-     * \param value Value to be set
-     */
-    void SetUniformi(GLint location, GLint value) const;
+    /** Uniform setting functions **/
+    inline void SetUniform(GLint location, GLint value) const
+    {
+        glUniform1i(location, value);
+        lgl::error::PrintOpenglErrorIfAny();
+    }
+
+    inline void SetUniform(GLint location, GLfloat value) const
+    {
+        glUniform1f(location, value);
+        lgl::error::PrintOpenglErrorIfAny();
+    }
 
 private:
     GLuint program;

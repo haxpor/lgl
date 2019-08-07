@@ -2,7 +2,6 @@
 #include "Wrapped_GL.h"
 #include "Util.h"
 #include "PBits.h"
-#include "Error.h"
 
 using namespace lgl;
 
@@ -82,10 +81,4 @@ void Shader::Use() const
 void Shader::Destroy()
 {
     glDeleteProgram(program);
-}
-
-void Shader::SetUniformi(GLint location, GLint value) const
-{
-    glUniform1i(location, value);
-    lgl::error::PrintOpenglErrorIfAny();
 }
