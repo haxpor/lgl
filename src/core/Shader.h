@@ -29,6 +29,14 @@ public:
      */
     void Destroy();
 
+    /**
+     * Set uniform value at location.
+     *
+     * \param location Location of uniform variable inside shader code.
+     * \param value Value to be set
+     */
+    void SetUniformi(GLint location, GLint value) const;
+
 private:
     GLuint program;
 };

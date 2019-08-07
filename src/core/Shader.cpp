@@ -83,3 +83,9 @@ void Shader::Destroy()
 {
     glDeleteProgram(program);
 }
+
+void Shader::SetUniformi(GLint location, GLint value) const
+{
+    glUniform1i(location, value);
+    lgl::error::PrintOpenglErrorIfAny();
+}
