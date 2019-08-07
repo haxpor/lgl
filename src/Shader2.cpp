@@ -70,20 +70,6 @@ public:
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
         glBindVertexArray(0);
-
-        isFirstFrameWaitDone = false;
-    }
-
-    void UserUpdate(const double delta) override {
-        if (isFirstFrameWaitDone)
-        {
-            double currentTicks = glfwGetTime();
-            double greenValue = (std::sin(currentTicks) / 2.0f) + 0.5f;
-
-            // skip calling to glUseProgram(shaderProgram) as we wait for 1 frame
-            // shaderProgram by now is set to be active, so we save subsequent call from now on
-            glUniform4f(0, 0.0f, greenValue, 0.0f, 1.0f);
-        }
     }
 
     void UserRender() override {
@@ -94,11 +80,6 @@ public:
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
-
-        if (!isFirstFrameWaitDone)
-        {
-            isFirstFrameWaitDone = true;
-        }
     }
 
 private:
@@ -124,7 +105,6 @@ void main()
 }
 )";
 
-    bool isFirstFrameWaitDone;
     GLuint VAO;
     GLuint shaderProgram;
 };
