@@ -2,6 +2,7 @@
 #include "Wrapped_GL.h"
 #include "Util.h"
 #include "PBits.h"
+#include "Error.h"
 
 using namespace lgl;
 
@@ -31,6 +32,7 @@ int Shader::Build(const char* vertexPath, const char* fragmentPath)
     glError = util::PrintGLShaderErrorIfAny(vertexShader);
     if (glError != 0)
     {
+        lgl::error::ErrorWarn("%s has error", vertexPath);
         return -1;
     }
 
@@ -50,6 +52,7 @@ int Shader::Build(const char* vertexPath, const char* fragmentPath)
     glError = util::PrintGLShaderErrorIfAny(fragmentShader);
     if (glError != 0)
     {
+        lgl::error::ErrorWarn("%s has error", fragmentShader);
         return -1;
     }
 
