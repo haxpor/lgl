@@ -6,6 +6,7 @@ with texture for primitive
 Changes
 - updated to use with proper shader sources (now tex.vert/frag)
 - fully and properly clean up memory used by this program, see UserShutdown()
+- mix color between two textures in GLSL, set its mixFactor via uniform, texture filtering config
 ====================
 */
 #include "Base.h"
