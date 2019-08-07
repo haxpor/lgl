@@ -63,6 +63,26 @@ inline GLint PrintGLShaderProgramErrorIfAny(const GLuint shaderProgram)
     return LGL_SUCCESS;
 }
 
+/**
+ * Load texture with pre-filled of default texture filtering.
+ *
+ * \param filepath Filepath to texture asset to load
+ * \return Texture object for loaded texture, if load failed return -1
+ */
+GLuint LoadTexture(const char* filepath);
+
+/**
+ * Load texture with pre-filled of default texture filtering.
+ *
+ * \param filepath Filepath to texture asset to load
+ * \param texture To be filled texture object after loading
+ * \param width To be filled with width of loaded texture if load successfully, otherwise no change. width cannot be NULL.
+ * \param height To be filled with height of loaded texture if load successfully, otherwise no change. height cannot be NULL.
+ * \param nrChannels To be filled with number of channels of loaded texture if load successfully, otherwise no change. nrChannels cannot be NULL.
+ * \return Texture object for loaded texture, if load failed return -1
+ */
+GLuint LoadTexture(const char* filepath, int *width, int *height, int *nrChannels);
+
 /* 
 ====================
 File reader
