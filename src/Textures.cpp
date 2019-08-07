@@ -13,11 +13,11 @@ Changes
 #include <cstdlib>
 
 float vertices[] = {
-    // positions        // colors         // texture coords
-     0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,               // top right
-     0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,               // bottom right
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,               // bottom left
-    -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f                // top left
+    // positions        // texture coords
+     0.5f,  0.5f, 0.0f, 1.0f, 1.0f,               // top right
+     0.5f, -0.5f, 0.0f, 1.0f, 0.0f,               // bottom right
+    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,               // bottom left
+    -0.5f,  0.5f, 0.0f, 0.0f, 1.0f                // top left
 };
 
 unsigned int indices[] = {
@@ -30,32 +30,15 @@ class Demo : public lgl::App
 public:
     void UserSetup() override {
         // create shader program and build it immediately
-        int result = basicShader.Build("../data/tex.vert", "../data/tex.frag");
+        int result = basicShader.Build("../data/tex.vert", "../data/multitex.frag");
         LGL_ERROR_QUIT(result, "Error creating basic shader");
 
         // load texture
-        int width, height, nrChannels;
-        unsigned char *data = stbi_load("../data/container.jpg", &width, &height, &nrChannels, 0);
-        if (data)
-        {
-            glGenTextures(1, &containerTexture);
-            glBindTexture(GL_TEXTURE_2D, containerTexture);
-
-            // set texture filtering on currently bound texture object
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            glGenerateMipmap(GL_TEXTURE_2D);
-
-            stbi_image_free(data);
-        }
-        else
-        {
-            lgl::error::ErrorWarn("Error loading ../data/container.jpg [%s]", stbi_failure_reason());
-        }
+        containerTexture = lgl::util::LoadTexture("../data/container.jpg");
+        if (containerTexture == LGL_FAIL) { lgl::error::ErrorExit("Error loading ../data/container.jpg"); }
+        
+        awesomefaceTexture = lgl::util::LoadTexture("../data/awesomeface.png");
+        if (awesomefaceTexture == LGL_FAIL) { lgl::error::ErrorExit("Error loading ../data/awesomeface.png"); }
 
         // wrap vertex attrib configurations via VAO
         glGenVertexArrays(1, &VAO);
@@ -66,14 +49,11 @@ public:
             glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
             // positions
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0));  // or 3*sizeof(float) for its stride parameter
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(0));  // or 3*sizeof(float) for its stride parameter
             glEnableVertexAttribArray(0);
-            // colors
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));  // start after 3 floats
-            glEnableVertexAttribArray(1);
             // texture coords
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));  // start after 6 floats
-            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));  // start after 3 floats
+            glEnableVertexAttribArray(1);
 
             // bind texture
             glBindTexture(GL_TEXTURE_2D, containerTexture);
@@ -84,7 +64,13 @@ public:
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
         glBindVertexArray(0);
 
-        isFirstFrameWaitDone = false;
+        // once preparation
+        // tell opengl which texture sampler map to whichs texture object
+        basicShader.Use();
+        glActiveTexture(GL_TEXTURE0);
+        basicShader.SetUniformi(0, 0);
+        glActiveTexture(GL_TEXTURE1);
+        basicShader.SetUniformi(1, 1);
     }
 
     void UserShutdown() override {
@@ -110,37 +96,26 @@ public:
         VAO = -1;
     }
 
-    void UserUpdate(const double delta) override {
-        if (isFirstFrameWaitDone)
-        {
-            double currentTicks = glfwGetTime();
-            double greenValue = (std::sin(currentTicks) / 2.0f) + 0.5f;
-
-            // skip calling to glUseProgram(shaderProgram) as we wait for 1 frame
-            // shaderProgram by now is set to be active, so we save subsequent call from now on
-            glUniform4f(0, 0.0f, greenValue, 0.0f, 1.0f);
-        }
-    }
-
     void UserRender() override {
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
         basicShader.Use();
+        // bind texture 0
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, containerTexture);
+        // bind texture 1
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, awesomefaceTexture);
+
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
-
-        if (!isFirstFrameWaitDone)
-        {
-            isFirstFrameWaitDone = true;
-        }
     }
 
 private:
-    bool isFirstFrameWaitDone;
     lgl::Shader basicShader;
-    GLuint containerTexture;
+    GLuint containerTexture, awesomefaceTexture;
     GLuint EBO;
     GLuint VBO;
     GLuint VAO;
