@@ -9,6 +9,7 @@ DEMOS["GLQuery.cpp"]="Simple OpenGL information query";                         
 DEMOS["Shader.cpp"]="Shader with uniform";                                              DEMOSOR+=("Shader.cpp")
 DEMOS["Shader2.cpp"]="Shader with more vertex attributes";                              DEMOSOR+=("Shader2.cpp")
 DEMOS["Shader2_with_FileReader.cpp"]="Based on Shader2.cpp but with FileReader";        DEMOSOR+=("Shader2_with_FileReader.cpp")
+DEMOS["Textures.cpp"]="Texture mapping. Sampling texture color from texture";           DEMOSOR+=("Textures.cpp")
 
 print_help() {
     echo "Usage: ./build.sh <command> <optional-parameter>"
