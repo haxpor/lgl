@@ -14,10 +14,10 @@ Changes
 
 float vertices[] = {
     // positions        // texture coords
-     0.5f,  0.5f, 0.0f, 1.0f, 1.0f,               // top right
-     0.5f, -0.5f, 0.0f, 1.0f, 0.0f,               // bottom right
+     0.5f,  0.5f, 0.0f, 2.0f, 2.0f,               // top right
+     0.5f, -0.5f, 0.0f, 2.0f, 0.0f,               // bottom right
     -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,               // bottom left
-    -0.5f,  0.5f, 0.0f, 0.0f, 1.0f                // top left
+    -0.5f,  0.5f, 0.0f, 0.0f, 2.0f                // top left
 };
 
 unsigned int indices[] = {
@@ -36,6 +36,11 @@ public:
         // load texture
         containerTexture = lgl::util::LoadTexture("../data/container.jpg");
         if (containerTexture == LGL_FAIL) { lgl::error::ErrorExit("Error loading ../data/container.jpg"); }
+        // modify its texture filtering
+        glBindTexture(GL_TEXTURE_2D, containerTexture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         
         awesomefaceTexture = lgl::util::LoadTexture("../data/awesomeface.png");
         if (awesomefaceTexture == LGL_FAIL) { lgl::error::ErrorExit("Error loading ../data/awesomeface.png"); }
@@ -68,9 +73,36 @@ public:
         // tell opengl which texture sampler map to whichs texture object
         basicShader.Use();
         glActiveTexture(GL_TEXTURE0);
-        basicShader.SetUniformi(0, 0);
+        basicShader.SetUniform(0, 0);
         glActiveTexture(GL_TEXTURE1);
-        basicShader.SetUniformi(1, 1);
+        basicShader.SetUniform(1, 1);
+        // set default uniform values
+        basicShader.SetUniform(2, mixFactor);
+    }
+
+    void UserProcessKeyInput() override {
+        // poll for key input
+        // blend more color from awesomeface
+        GLFWwindow* window = GetGLFWWindow();
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        {
+            mixFactor += 0.01f;
+            if (mixFactor > 1.0f)
+            {
+                mixFactor = 1.0f;
+            }
+            basicShader.SetUniform(2, mixFactor);
+        }
+        // blend more color from container
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        {
+            mixFactor -= 0.01f;
+            if (mixFactor < 0.0f)
+            {
+                mixFactor = 0.0f;
+            }
+            basicShader.SetUniform(2, mixFactor);
+        }
     }
 
     void UserShutdown() override {
@@ -116,6 +148,7 @@ public:
 private:
     lgl::Shader basicShader;
     GLuint containerTexture, awesomefaceTexture;
+    GLfloat mixFactor = 0.2f;
     GLuint EBO;
     GLuint VBO;
     GLuint VAO;
