@@ -7,6 +7,7 @@
 #include <sstream>
 #include "Bits.h"
 #include "Wrapped_GL.h"
+#include "Types.h"
 
 // This is not thread-safe as with the nature of OpenGL's fetching error status.
 OUTER_NAMESPACE(lgl)
@@ -36,7 +37,7 @@ inline GLint PrintGLShaderErrorIfAny(const GLuint shader)
         return status;
     }
 
-    return 0;
+    return LGL_SUCCESS;
 }
 
 /**
@@ -59,7 +60,7 @@ inline GLint PrintGLShaderProgramErrorIfAny(const GLuint shaderProgram)
         return status;
     }
 
-    return 0;
+    return LGL_SUCCESS;
 }
 
 /* 

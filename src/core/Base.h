@@ -6,7 +6,6 @@
 #include "Util.h"
 #include "Error.h"
 #include "Shader.h"
-#include "External.h"
 #include <GLFW/glfw3.h>
 
 #define SCREEN_WIDTH 800
