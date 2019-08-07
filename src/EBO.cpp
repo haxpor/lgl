@@ -99,7 +99,7 @@ void main()
 int main(int argc, char* argv[])
 {
     Demo app;
-    app.Setup("Indexed drawing");
+    app.Setup("EBO");
     app.Start();
     return 0;
 }

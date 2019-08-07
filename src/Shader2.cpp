@@ -132,7 +132,7 @@ void main()
 int main(int argc, char* argv[])
 {
     Demo app;
-    app.Setup("Indexed drawing");
+    app.Setup("Shader2");
     app.Start();
     return 0;
 }
