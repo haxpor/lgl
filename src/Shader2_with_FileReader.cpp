@@ -5,7 +5,7 @@ Based on Shader2.cpp but use FileReader to read in shader source codes
 Shader code accepts uniform as tint-color, but for application it uses it to fade in/out periodically.
 ====================
 */
-#include "Base.h"
+#include "lgl/Base.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -27,7 +27,7 @@ class Demo : public lgl::App
 public:
     void UserSetup() override {
         // create shader program and build it immediately
-        int result = basicShader.Build("../data/color.vert", "../data/color.frag");
+        int result = basicShader.Build("data/color.vert", "data/color.frag");
         LGL_ERROR_QUIT(result, "Error creating basic shader");
 
         // wrap vertex attrib configurations via VAO

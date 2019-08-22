@@ -9,7 +9,7 @@ Changes
 - mix color between two textures in GLSL, set its mixFactor via uniform, texture filtering config
 ====================
 */
-#include "Base.h"
+#include "lgl/Base.h"
 #include <cmath>
 #include <cstdlib>
 
@@ -31,20 +31,20 @@ class Demo : public lgl::App
 public:
     void UserSetup() override {
         // create shader program and build it immediately
-        int result = basicShader.Build("../data/tex.vert", "../data/multitex.frag");
+        int result = basicShader.Build("data/tex.vert", "data/multitex.frag");
         LGL_ERROR_QUIT(result, "Error creating basic shader");
 
         // load texture
-        containerTexture = lgl::util::LoadTexture("../data/container.jpg");
-        if (containerTexture == LGL_FAIL) { lgl::error::ErrorExit("Error loading ../data/container.jpg"); }
+        containerTexture = lgl::util::LoadTexture("data/container.jpg");
+        if (containerTexture == LGL_FAIL) { lgl::error::ErrorExit("Error loading data/container.jpg"); }
         // modify its texture filtering
         glBindTexture(GL_TEXTURE_2D, containerTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         
-        awesomefaceTexture = lgl::util::LoadTexture("../data/awesomeface.png");
-        if (awesomefaceTexture == LGL_FAIL) { lgl::error::ErrorExit("Error loading ../data/awesomeface.png"); }
+        awesomefaceTexture = lgl::util::LoadTexture("data/awesomeface.png");
+        if (awesomefaceTexture == LGL_FAIL) { lgl::error::ErrorExit("Error loading data/awesomeface.png"); }
 
         // wrap vertex attrib configurations via VAO
         glGenVertexArrays(1, &VAO);

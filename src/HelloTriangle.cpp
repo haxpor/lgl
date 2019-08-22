@@ -3,7 +3,7 @@
 Basic rendering triangle
 ====================
 */
-#include "Base.h"
+#include "lgl/Base.h"
 
 // define vertex data in NDC coordinate space
 // before it gets transformed into screen-space coordinate (clip space) as input for fragment shader

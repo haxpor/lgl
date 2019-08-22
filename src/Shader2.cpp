@@ -3,7 +3,7 @@
 More vertex attribute
 ====================
 */
-#include "Base.h"
+#include "lgl/Base.h"
 #include <cmath>
 
 float vertices[] = {

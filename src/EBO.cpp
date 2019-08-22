@@ -3,7 +3,7 @@
 Indexed drawing
 ====================
 */
-#include "Base.h"
+#include "lgl/Base.h"
 
 float vertices[] = {
      0.5f,  0.5f, 0.0f,      // top right

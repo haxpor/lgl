@@ -3,7 +3,7 @@
 Demonstrate a simple query information from OpenGL
 ====================
 */
-#include "Base.h"
+#include "lgl/Base.h"
 
 int main(int argc, char* argv[])
 {
