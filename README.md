@@ -6,9 +6,10 @@ To build demo programs, `cd` to `src/` directory, then use `make.sh` script to d
 
 for example
 
-`./make.sh build Shader.cpp`
+`./make.sh build src/Shader.cpp`
 
-it will produce `a.out` file, run it with `./a.out`.
+it will produce `a.out` file at the root directory, run it with `./a.out`. Any resource it needs to
+access is inside `data` directory.
 
 # make.sh
 
@@ -34,6 +35,7 @@ Included in `external/` directory
 Others
 
 * `glfw` - for window stuff
+* `glm` - for OpenGL Mathematics
 
 # Note
 
