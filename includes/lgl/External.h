@@ -15,4 +15,11 @@
 #endif
 
 
+// by core, underlying it uses glm to do maths stuff
+#ifdef LGL_EXTERNAL_GLM_INCLUDE
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#endif
+
 #endif // _EXTERNAL_H_

@@ -8,6 +8,10 @@
 #include "Shader.h"
 #include <GLFW/glfw3.h>
 
+// include the most frequently used at this level
+#define LGL_EXTERNAL_GLM_INCLUDE
+#include "External.h"
+
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
