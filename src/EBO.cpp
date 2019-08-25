@@ -25,13 +25,13 @@ public:
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertexShader, 1, &VS_CODE, NULL);
         glCompileShader(vertexShader);
-        lgl::util::PrintGLShaderErrorIfAny(vertexShader);
+        lgl::error::PrintGLShaderErrorIfAny(vertexShader);
 
         // compile fragment shader
         GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(fragmentShader, 1, &FS_CODE, NULL);
         glCompileShader(fragmentShader);
-        lgl::util::PrintGLShaderErrorIfAny(fragmentShader);
+        lgl::error::PrintGLShaderErrorIfAny(fragmentShader);
 
         // link all shaders together
         shaderProgram = glCreateProgram();

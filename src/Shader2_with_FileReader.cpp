@@ -3,6 +3,9 @@
 Based on Shader2.cpp but use FileReader to read in shader source codes
 
 Shader code accepts uniform as tint-color, but for application it uses it to fade in/out periodically.
+
+# Changes
+- use Shader::GetUniformLocation() to get location of tintColor instead of hardcoded.
 ====================
 */
 #include "lgl/Base.h"
@@ -64,7 +67,7 @@ public:
 
             // skip calling to glUseProgram(shaderProgram) as we wait for 1 frame
             // shaderProgram by now is set to be active, so we save subsequent call from now on
-            glUniform4f(0, fade, fade, fade, 1.0f);
+            glUniform4f(basicShader.GetUniformLocation("tintColor"), fade, fade, fade, 1.0f);
         }
     }
 
