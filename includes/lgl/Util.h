@@ -13,55 +13,6 @@
 OUTER_NAMESPACE(lgl)
 namespace util
 {
-const int ERROR_BUFFER = 512;
-extern GLint status;
-extern char errLog[ERROR_BUFFER];
-
-/**
- * Print error if there's any error from OpenGL's shader compilation operation.
- * Also return status code, negative number if failed, otherwise zero for success.
- *
- * This will check only via GL_COMPILE_STATUS.
- *
- * \param shader Shader object
- * \return Return error status code in negative if error occurs, otherwise return zero for success.
- */
-inline GLint PrintGLShaderErrorIfAny(const GLuint shader)
-{
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);  
-
-    if (!status)
-    {
-        glGetShaderInfoLog(shader, ERROR_BUFFER, nullptr, errLog);
-        std::cerr << "GL compilation error: " << errLog << std::endl;
-        return status;
-    }
-
-    return LGL_SUCCESS;
-}
-
-/**
- * Print error if there's any error occurs from OpenGL's shader program linking operation.
- * Also return the status code, negative number if failed but with specific error meaning for each case,
- * otherwise zero for success.
- *
- * This will check via its GL_LINK_STATUS only.
- *
- * \param shaderProgram Shader program object
- * \return Return error status code in negative if error occurs, otherwise return zero for success.
- */
-inline GLint PrintGLShaderProgramErrorIfAny(const GLuint shaderProgram)
-{
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
-    if (!status)
-    {
-        glGetProgramInfoLog(shaderProgram, ERROR_BUFFER, nullptr, errLog);
-        std::cerr << "GL shader program linking error: " << errLog << std::endl;
-        return status;
-    }
-
-    return LGL_SUCCESS;
-}
 
 /**
  * Load texture with pre-filled of default texture filtering.

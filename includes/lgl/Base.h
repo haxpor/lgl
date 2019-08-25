@@ -2,15 +2,15 @@
 #define _BASE_H_
 
 #include <iostream>
-#include "Wrapped_GL.h"
-#include "Util.h"
-#include "Error.h"
-#include "Shader.h"
+#include "lgl/Wrapped_GL.h"
+#include "lgl/Util.h"
+#include "lgl/Error.h"
+#include "lgl/Shader.h"
 #include <GLFW/glfw3.h>
 
 // include the most frequently used at this level
 #define LGL_EXTERNAL_GLM_INCLUDE
-#include "External.h"
+#include "lgl/External.h"
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600

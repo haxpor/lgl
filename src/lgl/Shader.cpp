@@ -28,10 +28,12 @@ int Shader::Build(const char* vertexPath, const char* fragmentPath)
     const char* t = vsCode.c_str();
     glShaderSource(vertexShader, 1, &t, NULL);
     glCompileShader(vertexShader);
-    glError = util::PrintGLShaderErrorIfAny(vertexShader);
+    glError = error::AnyGLShaderError(vertexShader);
     if (glError != 0)
     {
+#ifndef LGL_NODEBUG
         lgl::error::ErrorWarn("%s has error", vertexPath);
+#endif
         return -1;
     }
 
@@ -48,10 +50,12 @@ int Shader::Build(const char* vertexPath, const char* fragmentPath)
     glShaderSource(fragmentShader, 1, &t, NULL);
     glCompileShader(fragmentShader);
 
-    glError = util::PrintGLShaderErrorIfAny(fragmentShader);
+    glError = error::AnyGLShaderError(fragmentShader);
     if (glError != 0)
     {
+#ifndef LGL_NODEBUG
         lgl::error::ErrorWarn("%s has error", fragmentShader);
+#endif
         return -1;
     }
 
@@ -60,7 +64,7 @@ int Shader::Build(const char* vertexPath, const char* fragmentPath)
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
     glLinkProgram(program);
-    glError = util::PrintGLShaderProgramErrorIfAny(program);
+    glError = error::AnyGLShaderProgramError(program);
     if (glError != 0)
     {
         return -1;
@@ -81,4 +85,5 @@ void Shader::Use() const
 void Shader::Destroy()
 {
     glDeleteProgram(program);
+    vnamesHashmap.clear();
 }

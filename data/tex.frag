@@ -1,7 +1,6 @@
 #version 330 core
-#extension GL_ARB_explicit_uniform_location : require
 
-layout (location = 0) uniform sampler2D textureSampler;
+uniform sampler2D textureSampler;
 uniform vec4 tintColor;
 
 in vec3 vsColor;

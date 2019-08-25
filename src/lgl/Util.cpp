@@ -7,9 +7,6 @@
 
 using namespace lgl;
 
-GLint util::status = 0;
-char util::errLog[util::ERROR_BUFFER];
-
 GLuint util::LoadTexture(const char *filepath)
 {
     int width, height, nrChannels;
