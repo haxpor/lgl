@@ -2,3 +2,7 @@
 *.swo
 *.swp
 *.out
+
+# I used to generate tags with 'ctags -R .' with default output file name
+# just for navigation through source code to see its implementation, or declaration easier
+tags
