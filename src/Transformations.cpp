@@ -25,6 +25,14 @@ unsigned int indices[] = {
 class Demo : public lgl::App
 {
 public:
+    Demo() : App(),
+        container1_rotation(0.0f),
+        container2_scale(1.0f),
+        container1_trans(mat4(1.0f)),
+        container2_trans(mat4(1.0f))
+    {
+    }
+
     void UserSetup() override {
         // create shader program and build it immediately
         int result = basicShader.Build("data/tex.vert", "data/multitex.frag");
@@ -70,18 +78,14 @@ public:
         // tell opengl which texture sampler map to whichs texture object
         basicShader.Use();
         glActiveTexture(GL_TEXTURE0);
-        basicShader.SetUniform(basicShader.GetUniformLocation("texturSampler"), 0);
+        basicShader.SetUniform(basicShader.GetUniformLocation("textureSampler"), 0);
         glActiveTexture(GL_TEXTURE1);
         basicShader.SetUniform(basicShader.GetUniformLocation("textureSampler2"), 1);
         // set default uniform values
         basicShader.SetUniform(basicShader.GetUniformLocation("mixFactor"), mixFactor);
 
-        mat4 trans(1.0f);
-        // this will scale first, then rotate
-        trans = rotate(trans, radians(90.0f), vec3(0.0f, 0.0f, 1.0f));
-        trans = scale(trans, vec3(0.5f, 0.5f, 0.5f));
-
-        glUniformMatrix4fv(basicShader.GetUniformLocation("transform"), 1, GL_FALSE, value_ptr(trans));
+        // supply with identity matrix 
+        glUniformMatrix4fv(basicShader.GetUniformLocation("transform"), 1, GL_FALSE, value_ptr(mat4(1.0f)));
     }
 
     void UserProcessKeyInput() override {
@@ -144,8 +148,49 @@ public:
         glBindTexture(GL_TEXTURE_2D, awesomefaceTexture);
 
         glBindVertexArray(VAO);
+        // container 1
+        // update to uniform variable on shader
+        glUniformMatrix4fv(basicShader.GetUniformLocation("transform"), 1, GL_FALSE, value_ptr(container1_trans));
+        // draw
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        // container 2
+        // update to uniform variable on shader
+        glUniformMatrix4fv(basicShader.GetUniformLocation("transform"), 1, GL_FALSE, value_ptr(container2_trans));
+        // draw
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
+    }
+
+    void UserUpdate(const double delta) override
+    {
+        // keep rotating
+        container1_rotation += delta;
+        // bound rotation angle
+        if (container1_rotation > two_pi<float>())
+        {
+            container1_rotation = 0.0f;
+        }
+
+        // remember that it's post-multiplication matrix (column-based)
+        // thus result goes from right to left
+        // in this case we rotate, then translate
+        container1_trans = mat4(1.0f);
+        container1_trans = translate(container1_trans, vec3(0.5f, -0.5f, 0.0f));
+        container1_trans = rotate(container1_trans, container1_rotation, vec3(0.0f, 0.0f, 1.0f));
+
+        // WRONG: if we swap the order of transformation
+        // then it will be changed location into another first, then rotate
+        // thus it rotate around the new point instead which is wrong
+        //container1_trans = rotate(container1_trans, container1_rotation, vec3(0.0f, 0.0f, 1.0f));
+        //container1_trans = translate(container1_trans, vec3(0.5f, -0.5f, 0.0f));   
+
+        // keep scaling
+        container2_scale = glm::sin(glfwGetTime());
+        // update transformation for container 2
+        container2_trans = mat4(1.0f);
+        container2_trans = translate(container2_trans, vec3(-0.5f, 0.5f, 0.0f));
+        container2_trans = scale(container2_trans, vec3(container2_scale, container2_scale, 1.0f));
     }
 
 private:
@@ -155,6 +200,10 @@ private:
     GLuint EBO;
     GLuint VBO;
     GLuint VAO;
+    float container1_rotation;
+    float container2_scale;
+    mat4 container1_trans;
+    mat4 container2_trans;
 };
 
 int main(int argc, char* argv[])
