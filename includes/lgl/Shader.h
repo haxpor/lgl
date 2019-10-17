@@ -7,6 +7,11 @@
 #include <unordered_map>
 #include <utility>
 
+// as it's a single translation unit, then we still need to define
+// LGL_EXTERNAL_GLM_INCLUDE here
+#define LGL_EXTERNAL_GLM_INCLUDE
+#include "lgl/External.h"
+
 namespace lgl
 {
 

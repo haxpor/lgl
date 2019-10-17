@@ -75,6 +75,8 @@ int Shader::Build(const char* vertexPath, const char* fragmentPath)
     // they will be deleted after that
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+
+    return 0;
 }
 
 void Shader::Use() const
