@@ -33,7 +33,7 @@ if [ "$1" == "build" ]; then
         exit 1
     fi
 
-    g++ -g -fno-exceptions -std=c++11 \
+    g++ -g -fno-exceptions -Wno-stringop-overflow -std=c++11 \
         -Iexternals/glad/include \
         -Iexternals/stb_image \
         -Iincludes \
