@@ -2,14 +2,35 @@
 
 declare -A DEMOS
 declare -a DEMOSOR
-DEMOS["Barebone.cpp"]="Bare minimal just show window with no rendering";                DEMOSOR+=("Barebone.cpp")
-DEMOS["HelloTriangle.cpp"]="Basic triangle primitive rendering";                        DEMOSOR+=("HelloTriangle.cpp")
-DEMOS["EBO.cpp"]="Element Buffer Object (indexed rendering)";                           DEMOSOR+=("EBO.cpp")
-DEMOS["GLQuery.cpp"]="Simple OpenGL information query";                                 DEMOSOR+=("GLQuery.cpp")
-DEMOS["Shader.cpp"]="Shader with uniform";                                              DEMOSOR+=("Shader.cpp")
-DEMOS["Shader2.cpp"]="Shader with more vertex attributes";                              DEMOSOR+=("Shader2.cpp")
-DEMOS["Shader2_with_FileReader.cpp"]="Based on Shader2.cpp but with FileReader";        DEMOSOR+=("Shader2_with_FileReader.cpp")
-DEMOS["Textures.cpp"]="Texture mapping. Sampling texture color from texture";           DEMOSOR+=("Textures.cpp")
+DEMOS["Barebone.cpp"]="Bare minimal just show window with no rendering";
+DEMOSOR+=("Barebone.cpp")
+
+DEMOS["HelloTriangle.cpp"]="Basic triangle primitive rendering";
+DEMOSOR+=("HelloTriangle.cpp")
+
+DEMOS["EBO.cpp"]="Element Buffer Object (indexed rendering)";
+DEMOSOR+=("EBO.cpp")
+
+DEMOS["GLQuery.cpp"]="Simple OpenGL information query";
+DEMOSOR+=("GLQuery.cpp")
+
+DEMOS["Shader.cpp"]="Shader with uniform";
+DEMOSOR+=("Shader.cpp")
+
+DEMOS["Shader2.cpp"]="Shader with more vertex attributes";
+DEMOSOR+=("Shader2.cpp")
+
+DEMOS["Shader2_with_FileReader.cpp"]="Based on Shader2.cpp but with FileReader";
+DEMOSOR+=("Shader2_with_FileReader.cpp")
+
+DEMOS["Textures.cpp"]="Texture mapping. Sampling texture color from texture";
+DEMOSOR+=("Textures.cpp")
+
+DEMOS["Transformations.cpp"]="Basic applying of transformations on 2 quads";
+DEMOSOR+=("Transformations.cpp")
+
+DEMOS["Transformations2.cpp"]="Rotating cubes";
+DEMOSOR+=("Transformations2.cpp")
 
 print_help() {
     echo "Usage: ./build.sh <command> <optional-parameter>"
