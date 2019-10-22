@@ -115,7 +115,7 @@ public:
 
         // return success
         // success code from glGetError() is the same as of 0
-        return 0;
+        return LGL_SUCCESS;
     }
 
     /**

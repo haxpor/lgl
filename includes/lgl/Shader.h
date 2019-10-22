@@ -52,55 +52,42 @@ public:
 
     /**
      * Set uniform value from uniform variable name 'vname'.
+     * It will save vname into hashmap if not exist yet for later more efficient updating
+     * value into the same uniform variable again.
      */
-    inline void SetUniform(const char *vname, GLint value) const
+    inline void SetUniform(const char *vname, GLint value)
     {
-        GLint location = glGetUniformLocation(program, vname);
-        glUniform1i(location, value);
-        LGL_AnyGLErrorMsgOnly
+        // try to get such vname's location from hashmap first
+        const auto loc = GetUniformLocation(vname);
+        if (loc != LGL_FAIL)
+        {
+            glUniform1i(loc, value);
+            LGL_AnyGLErrorMsgOnly
+        }
     }
 
     /**
      * Set uniform value from uniform variable name vname.
-     * It will save vanem into hashmap if not exist yet for later more efficient updating
+     * It will save vname into hashmap if not exist yet for later more efficient updating
      * value into the same uniform variable again.
      */
     inline void SetUniform(const char *vname, GLfloat value)
     {
         // try to get such vname's location from hashmap first
-        const auto e = vnamesHashmap.find(vname);
-        if (e != vnamesHashmap.end())
+        const auto loc = GetUniformLocation(vname);
+        if (loc != LGL_FAIL)
         {
-            // FOUND!
-            // directly use cached value to update to uniform variable
-            glUniform1f(e->second, value);
+            glUniform1f(loc, value);
             LGL_AnyGLErrorMsgOnly
-        }
-        else
-        {
-            // find such location via OpenGL
-            GLint location = glGetUniformLocation(program, vname);
-            if (location == -1)
-            {
-#ifndef LGL_NODEBUG
-                lgl::error::ErrorWarn("Cannot find uniform variable location for %s of shader %u", vname, program);
-#endif
-            }
-            else
-            {
-                // save into hashmap
-                vnamesHashmap.emplace(std::make_pair(vname, location));
-                glUniform1f(location, value);
-                LGL_AnyGLErrorMsgOnly
-            }
         }
     }
 
     /**
      * Get cached location values from input vname for uniform variable.
+     * If not found inside the cache, it will save it, then attempt to get OpenGL location to return it.
      * Returns LGL_FAIL if there is no such location from input vname, otherwise return its location.
      */
-    inline const GLint GetUniformLocation(const char *vname)
+    inline GLint GetUniformLocation(const char *vname)
     {
         const auto e = vnamesHashmap.find(vname);
         if (e != vnamesHashmap.end())
@@ -139,6 +126,6 @@ private:
     std::unordered_map<std::string, GLint> vnamesHashmap;
 };
 
-};
+}
 
 #endif

@@ -18,7 +18,7 @@ namespace util
  * Load texture with pre-filled of default texture filtering.
  *
  * \param filepath Filepath to texture asset to load
- * \return Texture object for loaded texture, if load failed return -1
+ * \return Texture object for loaded texture, error reported by opengl so check it via lgl::error::AnyGLError().
  */
 GLuint LoadTexture(const char* filepath);
 
@@ -30,7 +30,7 @@ GLuint LoadTexture(const char* filepath);
  * \param width To be filled with width of loaded texture if load successfully, otherwise no change. width cannot be NULL.
  * \param height To be filled with height of loaded texture if load successfully, otherwise no change. height cannot be NULL.
  * \param nrChannels To be filled with number of channels of loaded texture if load successfully, otherwise no change. nrChannels cannot be NULL.
- * \return Texture object for loaded texture, if load failed return -1
+ * \return Texture object for loaded texture, if there's any error, it will be reported by OpenGL so check it via lgl::error::AnyGLError().
  */
 GLuint LoadTexture(const char* filepath, int *width, int *height, int *nrChannels);
 
@@ -76,7 +76,7 @@ public:
     }
 };
 
-};
+}
 END_NAMESPACE(lgl)
 
 #endif

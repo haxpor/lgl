@@ -3,7 +3,7 @@
 
 #define OUTER_NAMESPACE(name) namespace name \
         {
-#define END_NAMESPACE(name) };
+#define END_NAMESPACE(name) }
 
 
 #endif

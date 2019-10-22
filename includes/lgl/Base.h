@@ -17,6 +17,19 @@
 
 namespace lgl
 {
+    // configurations used to setup and initialize the App 
+    struct AppConfigs
+    {
+        bool MousePosEnabled;
+        bool RelativeMouseCursor;
+        bool MouseScrollEnabled;
+
+        AppConfigs(): MousePosEnabled(false),
+                      RelativeMouseCursor(false),
+                      MouseScrollEnabled(false)
+        { }
+    };
+
     /*
     ====================
     App instance
@@ -25,15 +38,17 @@ namespace lgl
     class App
     {
     public:
-        int Setup(const char* title);
+        int Setup(const char* title, const lgl::AppConfigs& configs=lgl::AppConfigs());
         void Start();
         GLFWwindow* GetGLFWWindow() const;
 
         // ------------ user-callback ---------------- //
         virtual void UserFramebufferSizeCallback(const int width, const int height);
-        virtual void UserProcessKeyInput();
+        virtual void UserProcessKeyInput(double deltaTime);
+        virtual void UserProcessMousePos(float xOffset, float yOffset);
+        virtual void UserProcessMouseScrollInput(float xOffset, float yOffset);
         virtual void UserSetup();
-        virtual void UserUpdate(const double delta);    // delta in seconds
+        virtual void UserUpdate(double delta);    // delta in seconds
         virtual void UserRender();
         virtual void UserShutdown();
         // ------------ end of user-callback --------- //
@@ -44,21 +59,29 @@ namespace lgl
             GLFWwindow* window;
         };
 
-        // need to be static to satisfy the requirement of GLFW's function to set this function pointer
+        // defined within the context of class here to allow
+        // static functions to access App's private member variables
         static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
-        void ProcessKeyInput(GLFWwindow* window);
+        static void MouseCallback(GLFWwindow* window, double xpos, double ypos);
+        static void MouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
+
+        // mouse control
+        float lastMouseX;
+        float lastMouseY;
+
+        void ProcessKeyInput(GLFWwindow* window, double deltaTime);
 
         TmpHolder holder;
         double prevTicks;
     };
-};
+}
 
 inline GLFWwindow* lgl::App::GetGLFWWindow() const
 {
     return holder.window;
 }
 
-inline int lgl::App::Setup(const char* title)
+inline int lgl::App::Setup(const char* title, const lgl::AppConfigs& configs)
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -68,17 +91,32 @@ inline int lgl::App::Setup(const char* title)
     GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, title, nullptr, nullptr);
     if (window == nullptr)
     {
-        std::cout << "Failed to crate GLFW window" << std::endl;
+        lgl::error::ErrorWarn("Failed to create GLFW window");
         glfwTerminate();
         return -1;
     }
 
+    if (configs.MousePosEnabled)
+    {
+        lastMouseX = SCREEN_WIDTH / 2.0f;
+        lastMouseY = SCREEN_HEIGHT / 2.0f;
+    }
+
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
+    glfwSetFramebufferSizeCallback(window, lgl::App::FramebufferSizeCallback);
+
+    if (configs.MousePosEnabled)
+    {
+        glfwSetCursorPosCallback(window, lgl::App::MouseCallback);
+        if (configs.RelativeMouseCursor)
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
+    if (configs.MouseScrollEnabled)
+        glfwSetScrollCallback(window, lgl::App::MouseScrollCallback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+        lgl::error::ErrorWarn("Failed to initalize GLAD");
         glfwTerminate();
         return -1;
     }
@@ -95,6 +133,37 @@ inline int lgl::App::Setup(const char* title)
     return 0;
 }
 
+inline void lgl::App::MouseCallback(GLFWwindow* window, double xpos, double ypos)
+{
+    lgl::App *app = static_cast<lgl::App*>(glfwGetWindowUserPointer(window));
+
+    // prevent first frame of sudden jump of camera
+    static bool firstMouse = true;
+    if (firstMouse)
+    {
+        app->lastMouseX = xpos;
+        app->lastMouseY = ypos;
+        firstMouse = false;
+    }
+
+    float xOffset = xpos - app->lastMouseX;
+    float yOffset = app->lastMouseY - ypos;
+    app->lastMouseX = xpos;
+    app->lastMouseY = ypos;
+
+    static float kSensitivity = 0.05f;
+    xOffset *= kSensitivity;
+    yOffset *= kSensitivity;
+
+    app->UserProcessMousePos(xOffset, yOffset);
+}
+
+inline void lgl::App::MouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset)
+{
+    lgl::App *app = static_cast<lgl::App*>(glfwGetWindowUserPointer(window));
+    app->UserProcessMouseScrollInput(xOffset, yOffset);
+}
+
 inline void lgl::App::FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
@@ -103,14 +172,14 @@ inline void lgl::App::FramebufferSizeCallback(GLFWwindow* window, int width, int
     app->UserFramebufferSizeCallback(width, height);
 }
 
-inline void lgl::App::ProcessKeyInput(GLFWwindow* window)
+inline void lgl::App::ProcessKeyInput(GLFWwindow* window, double deltaTime)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, true);
     }
 
-    UserProcessKeyInput();
+    UserProcessKeyInput(deltaTime);
 }
 
 inline void lgl::App::Start()
@@ -124,10 +193,10 @@ inline void lgl::App::Start()
 
         glfwPollEvents();
 
-        // update
-        ProcessKeyInput(window);
-
         double delta = glfwGetTime() - prevTicks; 
+        // update input
+        ProcessKeyInput(window, delta);
+        // update main loop
         UserUpdate(delta);
         prevTicks = glfwGetTime();
 
@@ -143,7 +212,7 @@ inline void lgl::App::Start()
 }
 
 inline void lgl::App::UserSetup() { }
-inline void lgl::App::UserUpdate(const double delta) { }
+inline void lgl::App::UserUpdate(double) { }
 inline void lgl::App::UserRender()
 {
     glClear(GL_COLOR_BUFFER_BIT);
@@ -151,7 +220,9 @@ inline void lgl::App::UserRender()
 }
 inline void lgl::App::UserShutdown() { }
 
-inline void lgl::App::UserProcessKeyInput() { }
-inline void lgl::App::UserFramebufferSizeCallback(int width, int height) { }
+inline void lgl::App::UserProcessKeyInput(double) { }
+inline void lgl::App::UserProcessMousePos(float, float) { }
+inline void lgl::App::UserProcessMouseScrollInput(float, float) { }
+inline void lgl::App::UserFramebufferSizeCallback(int, int) { }
 
 #endif
