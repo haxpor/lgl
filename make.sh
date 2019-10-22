@@ -32,6 +32,9 @@ DEMOSOR+=("Transformations.cpp")
 DEMOS["Transformations2.cpp"]="Rotating cubes";
 DEMOSOR+=("Transformations2.cpp")
 
+DEMOS["Camera.cpp"]="Camera setup and manipulation";
+DEMOSOR+=("Camera.cpp")
+
 print_help() {
     echo "Usage: ./build.sh <command> <optional-parameter>"
     echo "List of commands"
@@ -61,7 +64,7 @@ if [ "$1" == "build" ]; then
         src/lgl/*.cpp \
         externals/glad/src/glad.c \
         $2 \
-        -lglfw3 -lGL -lX11 -lpthread -ldl
+        -lglfw3 -lGL -lX11 -lpthread -lm -ldl
 
 elif [ "$1" == "list" ]; then
     for i in "${!DEMOSOR[@]}"; do
