@@ -84,7 +84,7 @@ public:
 
         // load texture
         containerTexture = lgl::util::LoadTexture("data/container.jpg");
-        if (containerTexture == LGL_FAIL) { lgl::error::ErrorExit("Error loading data/container.jpg"); }
+        if (lgl::error::AnyGLError() != 0) { lgl::error::ErrorExit("Error loading data/container.jpg"); }
         // modify its texture filtering
         glBindTexture(GL_TEXTURE_2D, containerTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -92,7 +92,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         
         awesomefaceTexture = lgl::util::LoadTexture("data/awesomeface.png");
-        if (awesomefaceTexture == LGL_FAIL) { lgl::error::ErrorExit("Error loading data/awesomeface.png"); }
+        if (lgl::error::AnyGLError() != 0) { lgl::error::ErrorExit("Error loading data/awesomeface.png"); }
 
         // wrap vertex attrib configurations via VAO
         glGenVertexArrays(1, &VAO);
@@ -134,7 +134,7 @@ public:
         glEnable(GL_DEPTH_TEST); 
     }
 
-    void UserProcessKeyInput() override {
+    void UserProcessKeyInput(double) override {
         // poll for key input
         // blend more color from awesomeface
         GLFWwindow* window = GetGLFWWindow();
@@ -211,7 +211,7 @@ public:
         glBindVertexArray(0);
     }
 
-    void UserUpdate(const double delta) override
+    void UserUpdate(double) override
     {
     }
 
@@ -223,7 +223,7 @@ private:
     GLuint VAO;
 };
 
-int main(int argc, char* argv[])
+int main()
 {
     Demo app;
     app.Setup("Transformations");

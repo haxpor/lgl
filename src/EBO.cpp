@@ -25,20 +25,20 @@ public:
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertexShader, 1, &VS_CODE, NULL);
         glCompileShader(vertexShader);
-        lgl::error::PrintGLShaderErrorIfAny(vertexShader);
+        lgl::error::AnyGLShaderError(vertexShader);
 
         // compile fragment shader
         GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(fragmentShader, 1, &FS_CODE, NULL);
         glCompileShader(fragmentShader);
-        lgl::error::PrintGLShaderErrorIfAny(fragmentShader);
+        lgl::error::AnyGLShaderError(fragmentShader);
 
         // link all shaders together
         shaderProgram = glCreateProgram();
         glAttachShader(shaderProgram, vertexShader);
         glAttachShader(shaderProgram, fragmentShader);
         glLinkProgram(shaderProgram);
-        lgl::util::PrintGLShaderProgramErrorIfAny(shaderProgram);
+        lgl::error::AnyGLShaderProgramError(shaderProgram);
 
         // delete un-needed shader objects
         // note: in fact, it will mark them for deletion after our usage of shader program is done
@@ -96,7 +96,7 @@ void main()
     GLuint shaderProgram;
 };
 
-int main(int argc, char* argv[])
+int main()
 {
     Demo app;
     app.Setup("EBO");

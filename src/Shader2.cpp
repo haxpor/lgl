@@ -109,7 +109,7 @@ void main()
     GLuint shaderProgram;
 };
 
-int main(int argc, char* argv[])
+int main()
 {
     Demo app;
     app.Setup("Shader2");
