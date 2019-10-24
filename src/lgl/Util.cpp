@@ -5,15 +5,13 @@
 #define LGL_EXTERNAL_STB_IMAGE_INCLUDE
 #include "lgl/External.h"
 
-using namespace lgl;
-
-GLuint util::LoadTexture(const char *filepath)
+GLuint lgl::util::LoadTexture(const char *filepath)
 {
     int width, height, nrChannels;
-    return util::LoadTexture(filepath, &width, &height, &nrChannels);
+    return lgl::util::LoadTexture(filepath, &width, &height, &nrChannels);
 }
 
-GLuint util::LoadTexture(const char *filepath, int *width, int *height, int *nrChannels)
+GLuint lgl::util::LoadTexture(const char *filepath, int *width, int *height, int *nrChannels)
 {
     stbi_set_flip_vertically_on_load(true);
     unsigned char *data = stbi_load(filepath, width, height, nrChannels, 0);

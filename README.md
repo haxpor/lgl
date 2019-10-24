@@ -11,20 +11,6 @@ for example
 it will produce `a.out` file at the root directory, run it with `./a.out`. Any resource it needs to
 access is inside `data` directory.
 
-# make.sh
-
-There is other functionality `make.sh` offers.
-
-It's based on `./make.sh <command> <optional-parameters>`.
-
-## List all demo programs
-
-Use `./make.sh list` to list all demo programs along with its corresponding description.
-
-## Help
-
-Use `./make.sh help` to show help text.
-
 # Dependencies
 
 Included in `external/` directory
@@ -37,13 +23,22 @@ Others
 * `glfw` - for window stuff
 * `glm` - for OpenGL Mathematics
 
+# make.sh
+
+Suport the following commands
+
+* `./make.sh build src/<main-source-file.cpp>` - to build target source file, provided that main function is in this file
+* `./make.sh buildsc src/self-contained/<dir>/<main-source-file.cpp>` - to build target source file. It is based on FreeGLUT, offer more flat view on sample source code (currently lean towards this path)
+* `./make.sh list` - list all available example programs to build
+* `./make.sh help` - print help message
+
 # Note
 
 All common source files/headers are inside `src/core`.
 
 Demo programs are a single source file for each, and located in `src/*.cpp`.
 
-At the near end of completion of study (thus this project), `CMake` build script will be added for convenience in building all demo programs. For now, it makes no sense to incur having it while studying. Modify `make.sh` as needed for your system to make it work for the time being.
+* At the near end of completion of study (thus this project), `CMake` build script will be added for convenience in building all demo programs. For now, it makes no sense to incur having it while studying. Modify `make.sh` as needed for your system to make it work for the time being.
 
 # How to create a new demo program
 
