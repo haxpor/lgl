@@ -39,7 +39,7 @@ int initGLUT(int argc, char** argv)
     glutInitWindowSize(screenWidth, screenHeight);
 
     glutInitContextVersion(3, 3);
-    gluInitContextProfile(GLUT_CORE_PROFILE);
+    glutInitContextProfile(GLUT_CORE_PROFILE);
 
     int handle = glutCreateWindow(argv[0]);
 
@@ -55,7 +55,10 @@ int initGLUT(int argc, char** argv)
 
 void initGL()
 {
-    std::cout << "OpenGL version in use: " << glGetString(GL_VERSION) << std::endl;
+    GLint majorVersion, minorVersion;
+    glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
+    glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
+    std::cout << "OpenGL version in use: " << majorVersion << "." << minorVersion << std::endl;
 
     glEnable(GL_DEPTH_TEST);
 }
