@@ -66,10 +66,30 @@ if [ "$1" == "build" ]; then
         $2 \
         -lglfw3 -lGL -lX11 -lpthread -lm -ldl
 
+elif [ "$1" == "buildsc" ]; then
+    if [ "$#" -lt 2 ]; then
+        echo "Missing .cpp source file"
+        echo "Usage: ./make.sh buildsc <.cpp source file>"
+        exit 1
+    fi
+
+    g++ -g -Wall -Wextra -pedantic -fno-exceptions -Wno-stringop-overflow -Wno-unused-parameter -std=c++11 \
+        -Iexternals/glad/include \
+        -Iexternals/stb_image \
+        -Iincludes \
+        src/lgl/*.cpp \
+        externals/glad/src/glad.c \
+        $2 \
+        -lglut -lGL -lX11 -lpthread -lm -ldl
+
 elif [ "$1" == "list" ]; then
     for i in "${!DEMOSOR[@]}"; do
         printf "%30s - %s\n" "${DEMOSOR[$i]}" "${DEMOS[${DEMOSOR[$i]}]}"
     done
+
+elif [ "$1" == "help" ]; then
+    print_help
+    exit 1
     
 else
     print_help
