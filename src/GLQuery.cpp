@@ -16,7 +16,8 @@ int main(int argc, char* argv[])
     // get segmentfault.
     GLint numResult;
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &numResult);
-    std::cout << "Number of attributes: " << numResult << "\n";
+    std::cout << "Number of attributes: " << numResult << '\n';
+    std::cout << "OpenGL version in use: " << glGetString(GL_VERSION) << '\n';
     
     app.Start();
 
