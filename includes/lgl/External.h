@@ -17,9 +17,14 @@
 
 // by core, underlying it uses glm to do maths stuff
 #ifdef LGL_EXTERNAL_GLM_INCLUDE
+
+// mainly for glm::to_string
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/string_cast.hpp"      // for glm::to_string
 #endif
 
 #endif // _EXTERNAL_H_
