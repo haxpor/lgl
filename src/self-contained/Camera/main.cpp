@@ -32,6 +32,8 @@ void mouseScrollCB(GLFWwindow* window, double dx, double dy);
 void update(double dt);
 void render();
 
+glm::mat4 selfImplemented_lookAt(glm::vec3 pos, glm::vec3 targetPos, glm::vec3 up);
+
 ////////////////////////
 /// global variables
 ////////////////////////
@@ -200,7 +202,9 @@ void initGL()
     shader.SetUniform("mixFactor", 0.5f);
 
     // compute view matrix
-    glm::mat4 view = glm::lookAt(camPos, camPos + camFront, camUp);
+    // two version of implementations provided: 1. via GLM 2. Self-implemented
+    //glm::mat4 view = glm::lookAt(camPos, camPos + camFront, camUp);
+    glm::mat4 view = selfImplemented_lookAt(camPos, camPos + camFront, camUp);
     glUniformMatrix4fv(shader.GetUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(view));
 
     // compute projection matrix
@@ -229,7 +233,9 @@ void render()
     glBindTexture(GL_TEXTURE_2D, awesomeTexture);
 
     glBindVertexArray(vao);
-        glm::mat4 view = glm::lookAt(camPos, camPos + camFront, camUp);
+        // two version of implementations provided: 1. via GLM 2. Self-implemented
+        //glm::mat4 view = glm::lookAt(camPos, camPos + camFront, camUp);
+        glm::mat4 view = selfImplemented_lookAt(camPos, camPos + camFront, camUp);
         glUniformMatrix4fv(shader.GetUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(view));
 
         for (std::size_t i=0; i<10; ++i)
@@ -241,6 +247,34 @@ void render()
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
     glBindVertexArray(0);
+}
+
+glm::mat4 selfImplemented_lookAt(glm::vec3 pos, glm::vec3 targetPos, glm::vec3 up)
+{
+    // inverse because the scene will be affected, not actually camera
+    glm::vec3 front = glm::normalize(pos - targetPos);
+    glm::vec3 right = glm::normalize(glm::cross(up, front));
+    glm::vec3 up_ = glm::cross(front, right);
+
+    glm::mat4 translation = glm::mat4(1.0f);
+    translation[3][0] = -pos.x;
+    translation[3][1] = -pos.y;
+    translation[3][2] = -pos.z;
+
+    glm::mat4 rotation = glm::mat4(1.0f);
+    rotation[0][0] = right.x;
+    rotation[0][1] = up_.x;
+    rotation[0][2] = front.x;
+    
+    rotation[1][0] = right.y;
+    rotation[1][1] = up_.y;
+    rotation[1][2] = front.y;
+
+    rotation[2][0] = right.z;
+    rotation[2][1] = up_.z;
+    rotation[2][2] = front.z;
+
+    return rotation * translation;
 }
 
 void reshapeCB(GLFWwindow* window, int w, int h)
