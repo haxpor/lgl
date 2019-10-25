@@ -28,7 +28,7 @@ Others
 Suport the following commands
 
 * `./make.sh build src/<main-source-file.cpp>` - to build target source file, provided that main function is in this file
-* `./make.sh buildsc src/self-contained/<dir>/<main-source-file.cpp>` - to build target source file. It is based on FreeGLUT, offer more flat view on sample source code (currently lean towards this path)
+* `./make.sh buildsc src/self-contained/<dir>/<main-source-file.cpp>` - to build target source file. It offers more flat view on sample source code (currently lean towards this path)
 * `./make.sh list` - list all available example programs to build
 * `./make.sh help` - print help message
 
