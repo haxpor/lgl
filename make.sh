@@ -64,9 +64,25 @@ if [ "$1" == "build" ]; then
         src/lgl/*.cpp \
         externals/glad/src/glad.c \
         $2 \
-        -lglfw3 -lGL -lX11 -lpthread -lm -ldl
+        -lglfw -lGL -lX11 -lpthread -lm -ldl
 
 elif [ "$1" == "buildsc" ]; then
+    if [ "$#" -lt 2 ]; then
+        echo "Missing .cpp source file"
+        echo "Usage: ./make.sh buildsc <.cpp source file>"
+        exit 1
+    fi
+
+    g++ -g -Wall -Wextra -pedantic -fno-exceptions -Wno-stringop-overflow -Wno-unused-parameter -std=c++11 \
+        -Iexternals/glad/include \
+        -Iexternals/stb_image \
+        -Iincludes \
+        src/lgl/*.cpp \
+        externals/glad/src/glad.c \
+        $2 \
+        -lglfw -lGL -lX11 -lpthread -lm -ldl
+
+elif [ "$1" == "build-freeglut" ]; then
     if [ "$#" -lt 2 ]; then
         echo "Missing .cpp source file"
         echo "Usage: ./make.sh buildsc <.cpp source file>"
