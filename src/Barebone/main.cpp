@@ -6,6 +6,18 @@
  *
  * This is a barebone version of application to just show window and read some data from inputs e.g.
  * mouse and keyboard.
+ *
+ * Compile with
+ *  
+ *  Linux:
+ *   g++ -g -Wall -Wextra -pedantic -fno-exceptions -Wno-stringop-overflow -Wno-unused-parameter -std=c++11 \
+ *       -Iexternals/glad/include \
+ *       -Iexternals/stb_image \
+ *       -Iincludes \
+ *       src/lgl/*.cpp \
+ *       externals/glad/src/glad.c \
+ *       <this-source-file> \
+ *       -lglut -lGL -lX11 -lpthread -lm -ldl
  */
 #include <GL/freeglut.h>
 #include <iostream>
