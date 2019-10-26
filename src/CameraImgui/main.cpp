@@ -317,9 +317,12 @@ void renderGUI()
                    maxValue = values[i]; 
             }
             char overlay[10];
-            sprintf(overlay, "%.02f ms", values[values_offset-1]);
+            std::snprintf(overlay, sizeof(overlay), "%.02f ms", values[values_offset-1]);
             ImGui::PlotLines("Elapsed Time", values, IM_ARRAYSIZE(values), values_offset, overlay, 0.0f, maxValue+0.5f, ImVec2(0,40));
         }
+
+        ImGui::Text("Cam Pos: %.02f, %.02f, %.02f", camPos.x, camPos.y, camPos.z);
+        ImGui::Text("Cam Front: %.02f, %.02f, %.02f", camFront.x, camFront.y, camFront.y); 
 
         ImGui::End();
     }
