@@ -1,5 +1,8 @@
 # Build
 
+Some programs have their own separate `Makefile` in its directory, but most can be build using `make.sh`
+script as follows.
+
 To build demo programs, `cd` to `src/` directory, then use `make.sh` script to do it as follows.
 
 `./make.sh build <target .cpp file>`
@@ -37,6 +40,7 @@ All common source files/headers are inside `src/core`.
 Demo programs are a single source file for each, and located in `src/*.cpp`.
 
 * At the near end of completion of study (thus this project), `CMake` build script will be added for convenience in building all demo programs. For now, it makes no sense to incur having it while studying. Modify `make.sh` as needed for your system to make it work for the time being.
+* **Beware**: Tested only on Linux, technically should work the same on other platforms but might need slight modification on build script, or particular code. Also some sample make uses of symlink to get access to `../../data` conveniently.
 
 # License
 
