@@ -1,5 +1,17 @@
 /**
  * Render a triangle using index buffer.
+ *
+ * Compile with
+ *  
+ *  Linux:
+ *   g++ -g -Wall -Wextra -pedantic -fno-exceptions -Wno-stringop-overflow -Wno-unused-parameter -std=c++11 \
+ *       -Iexternals/glad/include \
+ *       -Iexternals/stb_image \
+ *       -Iincludes \
+ *       src/lgl/*.cpp \
+ *       externals/glad/src/glad.c \
+ *       <this-source-file> \
+ *       -lglut -lGL -lX11 -lpthread -lm -ldl
  */
 #include "lgl/lgl.h"
 #include <GL/freeglut.h>

@@ -27,9 +27,7 @@ Others
 
 Suport the following commands
 
-* `./make.sh build src/<main-source-file.cpp>` - to build target source file, provided that main function is in this file
-* `./make.sh buildsc src/self-contained/<dir>/<main-source-file.cpp>` - to build target source file. It offers more flat view on sample source code (currently lean towards this path)
-* `./make.sh list` - list all available example programs to build
+* `./make.sh build src/<directory>/<main-source-file.cpp>` - to build target source file, provided that main function is in this file
 * `./make.sh help` - print help message
 
 # Note
@@ -39,18 +37,6 @@ All common source files/headers are inside `src/core`.
 Demo programs are a single source file for each, and located in `src/*.cpp`.
 
 * At the near end of completion of study (thus this project), `CMake` build script will be added for convenience in building all demo programs. For now, it makes no sense to incur having it while studying. Modify `make.sh` as needed for your system to make it work for the time being.
-
-# How to create a new demo program
-
-See `src/Barebone.cpp` as example.
-
-In short
-
-1. Include `Base.h`
-2. Inherit your custom class from `lgl::App` then implement relevant methods i.e. `UserUpdate()`, `UserRender()` etc as need.
-3. Call `lgl::App`'s `Setup()`, and `Start()`.
-
-You're done. Anyway to just quickly show an empty window, you can skip step 2, but that's not very useful right?
 
 # License
 
