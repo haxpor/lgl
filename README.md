@@ -45,4 +45,11 @@ Demo programs are a single source file for each, and located in `src/*.cpp`.
 # License
 
 All non-source asset from learnopengl.com, thus adhere to its original.
-Source code is adapted from original under MIT.
+
+There are code from Learnopengl.com exists in this repository, and it is licensed as CC BY-NC 4.0 license
+as published by Creative Commons, either version 4 of the License, or (at your option) any later version
+(as can be seen [here](https://github.com/JoeyDeVries/LearnOpenGL/blob/master/LICENSE.md)).
+
+Adapted or modified source code also adhere to such license as well, unless such code is totally new
+and developed from start which you can use your own judgement comparing source code from learngopengl.com
+and here.
