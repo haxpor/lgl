@@ -7,9 +7,22 @@
  * pressing left-mouse button then pan mouse normally. This is to allow mouse input to be able to
  * interact with GUI as well.
  *
+ * Gizmo is rendered on screen by using glViewport to specify the lower-left area with always-pass
+ * depth-testing (still allow depth-buffer writing). It has main box, 3 lines as axeses, and another
+ * 3 boxes at the tip of each axis. Box vertex attribute data is shared with normal boxes rendered in
+ * base scene. It uses just one vertex/fragment shader to render all of its components with
+ * customization of color (along with model, view, and projection matrix).
+ *
+ * Control:
+ * - hold left-mouse button then pan to look around
+ * - while holding left-mouse button, w/s/a/d to walk around
+ * - space key when configuration window is closed to show it again
+ * - escape key to quit the program
+ *
  * Integration:
  * Integrating with Dear ImGUI, notice 'imgui_impl_opengl3.cpp' file in which inclusion of glad/glad.h
  * uses "" double quote instead of <> as we bundle our generated glad.h header with the project.
+ *
  */
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -24,6 +37,7 @@ int screenHeight = 600;
 GLFWwindow* window = nullptr;
 double prevTicks;
 double lastMouseX, lastMouseY;
+glm::mat4 view, projection;
 
 ////////////////////////
 /// system callbacks
@@ -36,6 +50,7 @@ void sys_mouseCB(GLFWwindow* window, double x, double y);
 int initGLFW(int argc, char** argv);
 void initGL();
 void initImGUI();
+void initGizmo();
 
 void initMem();
 void destroyMem();
@@ -47,15 +62,17 @@ void mouseButtonCB(GLFWwindow* window, int button, int action, int mods);
 void update(double dt);
 void render();
 void renderGUI();
+void renderGizmo();
 
 glm::mat4 selfImplemented_lookAt(glm::vec3 pos, glm::vec3 targetPos, glm::vec3 up);
 
 ////////////////////////
 /// global variables
 ////////////////////////
-GLuint vao;
-GLuint vbo;
+GLuint vao, gizmoVAO[2];
+GLuint vbo, gizmoVBO[2];
 lgl::Shader shader;
+lgl::Shader gizmoShader;
 GLuint containerTexture;
 GLuint awesomeTexture;
 
@@ -133,6 +150,11 @@ unsigned int indices[] =
     0, 2, 3
 };
 
+float gizmoUpLinePoints[] = {
+    0.0f, 0.0f, 0.0f,
+    0.0f, 0.30f, 0.0f
+};
+
 ////////////////////////
 // implementations
 ////////////////////////
@@ -172,12 +194,12 @@ int initGLFW(int argc, char** argv)
 
 void initGL()
 {
+    glEnable(GL_DEPTH_TEST);
+
     GLint majorVersion, minorVersion;
     glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
     glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
     std::cout << "OpenGL version in use: " << majorVersion << "." << minorVersion << std::endl;
-
-    glEnable(GL_DEPTH_TEST);
     
     // create shader
     int result = shader.Build("data/tex2.vert", "data/multitex.frag");
@@ -216,25 +238,62 @@ void initGL()
     shader.Use();
     glActiveTexture(GL_TEXTURE0);
     shader.SetUniform("textureSampler", 0);
-    
     glActiveTexture(GL_TEXTURE1);
     shader.SetUniform("textureSampler2", 1);
-
     shader.SetUniform("mixFactor", 0.5f);
 
     // compute view matrix
     // two version of implementations provided: 1. via GLM 2. Self-implemented
     //glm::mat4 view = glm::lookAt(camPos, camPos + camFront, camUp);
-    glm::mat4 view = selfImplemented_lookAt(camPos, camPos + camFront, camUp);
+    view = selfImplemented_lookAt(camPos, camPos + camFront, camUp);
     glUniformMatrix4fv(shader.GetUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(view));
 
     // compute projection matrix
-    glm::mat4 projection = glm::perspective(glm::radians(camFov), screenWidth * 1.0f / screenHeight, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(camFov), screenWidth * 1.0f / screenHeight, 0.1f, 100.0f);
     glUniformMatrix4fv(shader.GetUniformLocation("projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
     std::cout << glfwGetVersionString() << std::endl;;
 
+    initGizmo();
     initImGUI();
+}
+
+void initGizmo()
+{
+    // create gizmo's box shader
+    int result = gizmoShader.Build("data2/gizmo.vert", "data2/gizmo.frag");
+    LGL_ERROR_QUIT(result, "Error creating gizmo shader");
+
+    // box
+    glGenVertexArrays(2, gizmoVAO);
+    glGenBuffers(2, gizmoVBO);
+
+    glBindVertexArray(gizmoVAO[0]);
+        glBindBuffer(GL_ARRAY_BUFFER, gizmoVBO[0]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+        glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
+
+    // lines
+    glBindVertexArray(gizmoVAO[1]);
+        glBindBuffer(GL_ARRAY_BUFFER, gizmoVBO[1]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(gizmoUpLinePoints), gizmoUpLinePoints, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+        glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
+
+    gizmoShader.Use();
+    glUniform3f(gizmoShader.GetUniformLocation("color"), 0.7f, 0.7f, 0.7);
+
+    glm::mat4 viewCopy = glm::mat4(view);
+    viewCopy[3][0] = 0.0f;
+    viewCopy[3][1] = 0.0f;
+    viewCopy[3][2] = -1.0f;     // move the camera back slightly to see all angle of object
+    glUniformMatrix4fv(gizmoShader.GetUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(viewCopy));
+
+    glm::mat4 projection = glm::perspective(glm::radians(camFov), 1.0f, 0.1f, 100.0f);
+    glUniformMatrix4fv(gizmoShader.GetUniformLocation("projection"), 1, GL_FALSE, glm::value_ptr(projection));
 }
 
 void initImGUI()
@@ -246,7 +305,7 @@ void initImGUI()
     ImGui::StyleColorsDark();
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
+    ImGui_ImplOpenGL3_Init("#version 330 core");
 }
 
 void update(double dt)
@@ -258,6 +317,9 @@ void render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(bgColor[0], bgColor[1], bgColor[2], 1.0f);
+    glDepthFunc(GL_LESS);
+
+    glViewport(0, 0, static_cast<GLsizei>(screenWidth), static_cast<GLsizei>(screenHeight));
 
     shader.Use();
     // bind 1st texture
@@ -270,7 +332,7 @@ void render()
     glBindVertexArray(vao);
         // two version of implementations provided: 1. via GLM 2. Self-implemented
         //glm::mat4 view = glm::lookAt(camPos, camPos + camFront, camUp);
-        glm::mat4 view = selfImplemented_lookAt(camPos, camPos + camFront, camUp);
+        view = selfImplemented_lookAt(camPos, camPos + camFront, camUp);
         glUniformMatrix4fv(shader.GetUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(view));
 
         for (std::size_t i=0; i<10; ++i)
@@ -329,6 +391,95 @@ void renderGUI()
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void renderGizmo()
+{
+    glViewport(0, 0, 100, 100);
+    glDepthFunc(GL_ALWAYS);
+
+    gizmoShader.Use();
+
+    glm::mat4 viewCopy = glm::mat4(view);
+    viewCopy[3][0] = 0.0f;
+    viewCopy[3][1] = -0.08f;
+    viewCopy[3][2] = -1.0f;
+    glUniformMatrix4fv(gizmoShader.GetUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(viewCopy));
+
+    glBindVertexArray(gizmoVAO[0]);
+        // draw box-dots y-axis
+        {
+        glm::vec3 dir = glm::vec3(0.0f, gizmoUpLinePoints[4], 0.0f);
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, dir);
+        model = glm::scale(model, glm::vec3(0.03f));
+        glUniformMatrix4fv(gizmoShader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniform3f(gizmoShader.GetUniformLocation("color"), 0.0f, 0.7f, 0.0f);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        }   
+
+        // draw box-dots x-axis
+        {
+        glm::vec3 dir = glm::vec3(gizmoUpLinePoints[4], 0.0f, 0.0f);
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, dir);
+        model = glm::scale(model, glm::vec3(0.03f));
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        glUniformMatrix4fv(gizmoShader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniform3f(gizmoShader.GetUniformLocation("color"), 0.7f, 0.0f, 0.0f);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        }   
+
+        // draw box-dots z-axis
+        {
+        glm::vec3 dir = glm::vec3(0.0f, 0.0f, gizmoUpLinePoints[4]);
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, dir);
+        model = glm::scale(model, glm::vec3(0.03f));
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        glUniformMatrix4fv(gizmoShader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniform3f(gizmoShader.GetUniformLocation("color"), 0.0f, 0.0f, 0.7f);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        }   
+    
+        // draw box
+        {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.15f));
+        glUniformMatrix4fv(gizmoShader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniform3f(gizmoShader.GetUniformLocation("color"), 0.7f, 0.7f, 0.7f);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+    glBindVertexArray(0);
+
+    // draw lines
+    glBindVertexArray(gizmoVAO[1]);
+        // y-axis
+        {
+        glm::mat4 model = glm::mat4(1.0f);
+        glUniformMatrix4fv(gizmoShader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniform3f(gizmoShader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
+        glDrawArrays(GL_LINES, 0, 6);
+        }
+
+        // x-axis
+        {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        glUniformMatrix4fv(gizmoShader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniform3f(gizmoShader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
+        glDrawArrays(GL_LINES, 0, 6);
+        }
+
+        // z-axis
+        {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        glUniformMatrix4fv(gizmoShader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniform3f(gizmoShader.GetUniformLocation("color"), 0.0f, 0.0f, 1.0f);
+        glDrawArrays(GL_LINES, 0, 6);
+        }
+    glBindVertexArray(0);
 }
 
 glm::mat4 selfImplemented_lookAt(glm::vec3 pos, glm::vec3 targetPos, glm::vec3 up)
@@ -421,8 +572,13 @@ void mouseScrollCB(GLFWwindow* window, double dx, double dy)
         if (camFov > 45.0f)
             camFov = 45.0f;
 
-        glm::mat4 projection = glm::perspective(glm::radians(camFov), screenWidth * 1.0f / screenHeight, 0.1f, 100.0f);
+        shader.Use();
+        projection = glm::perspective(glm::radians(camFov), screenWidth * 1.0f / screenHeight, 0.1f, 100.0f);
         glUniformMatrix4fv(shader.GetUniformLocation("projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+        gizmoShader.Use();
+        glm::mat4 projection = glm::perspective(glm::radians(camFov), 1.0f, 0.1f, 100.0f);
+        glUniformMatrix4fv(gizmoShader.GetUniformLocation("projection"), 1, GL_FALSE, glm::value_ptr(projection));
     }
 }
 
@@ -472,7 +628,10 @@ void destroyMem()
 {
     glDeleteBuffers(1, &vao);
     glDeleteBuffers(1, &vbo);
+    glDeleteBuffers(2, gizmoVAO);
+    glDeleteBuffers(2, gizmoVBO);
     shader.Destroy();
+    gizmoShader.Destroy();
 }
 
 int main(int argc, char** argv)
@@ -493,6 +652,7 @@ int main(int argc, char** argv)
         update(delta);
         render();
         renderGUI();
+        renderGizmo();
 
         glfwSwapBuffers(window);
     }
