@@ -1,7 +1,14 @@
 /**
  * Check whether GLM class i.e. vec is POD (plain old data) type.
- * As we can use such class submitting to OpenGL's vertex buffer directly, and no need for
+ * As we might use such class to submit to OpenGL's vertex buffer directly, and no need for
  * refactoring / serializing data structure out.
+ *
+ * Compile with make.sh.
+ *
+ * Result:
+ *  - all glm types are POD type
+ *  - sizeof(T) is exactly size of elements for such type (x,y,z,w) thus we can use such type to hold
+ *    vertex data then submit to OpenGL directly.
  */
 #include "lgl/lgl.h"
 #include <iostream>
@@ -10,7 +17,7 @@
 template <typename T>
 void isPod(const char* msg)
 {
-    std::cout << msg << ": " << std::boolalpha << std::is_pod<T>::value << std::endl;
+    std::cout << msg << ": " << std::boolalpha << std::is_pod<T>::value << " [" << sizeof(T) << "]" << std::endl;
 }
 
 int main()
