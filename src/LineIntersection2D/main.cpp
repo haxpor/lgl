@@ -126,6 +126,7 @@ bool lineIntersect(const Line& p, const Line& q, Vector3& intersectedPos);
 GLuint vao[2];
 GLuint vbo[2];
 lgl::Shader shader;
+lgl::Shader dotShader;
 
 const float kVDepth = -1.0f;
 Vector3 pVertices[2] = {
@@ -154,6 +155,9 @@ Vector3 recti[6] = {
     Vector3(-0.1f, -0.1f, kVDepth),
     Vector3(0.1f, -0.1f, kVDepth)
 };
+
+Vector3 dotVertex;
+Vector3 tmpIntersectedPos;
 
 ////////////////////////
 // implementations
@@ -201,6 +205,9 @@ void initGL()
     int result = shader.Build("data2/trans.vert", "data2/color.frag");
     LGL_ERROR_QUIT(result, "Error creating shader");
 
+    result = dotShader.Build("data2/dot.vert", "data2/dot.frag");
+    LGL_ERROR_QUIT(result, "Error creating dotShader");
+
     // create buffer objects
     glGenVertexArrays(2, vao);
     glGenBuffers(2, vbo);
@@ -221,7 +228,7 @@ void initGL()
     // prepare for rect (intersection) vao
     glBindVertexArray(vao[1]);
         glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 6, nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 4, nullptr, GL_DYNAMIC_DRAW);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3), nullptr);
         glEnableVertexAttribArray(0);
     glBindVertexArray(0);
@@ -239,7 +246,17 @@ void initGL()
     glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
     lgl::error::AnyGLError();
 
+    dotShader.Use();
+    glUniformMatrix4fv(dotShader.GetUniformLocation("pv"), 1, GL_FALSE, glm::value_ptr(transform));
+    lgl::error::AnyGLError();
+    glUniformMatrix4fv(dotShader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    lgl::error::AnyGLError();
+
     std::cout << glfwGetVersionString() << std::endl;;
+
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     initImGUI();
 }
@@ -270,10 +287,6 @@ void render()
 
     glBindVertexArray(vao[0]);
         glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-        {
-        glm::mat4 model = glm::mat4(1.0f);
-        glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
-        }
         // x-axis
         glUniform3f(shader.GetUniformLocation("color"), 1.0f, 1.0f, 1.0f);
         // invalidate entire buffer (orphan)
@@ -336,23 +349,46 @@ void render()
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, qVertices, GL_STREAM_DRAW);
         glDrawArrays(GL_LINES, 0, 6);
 
+    dotShader.Use();
     glBindVertexArray(vao[1]);
         glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+
+        // line p - tipping point 0
+        dotVertex = pVertices[0];
+        glUniform3f(shader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), &dotVertex, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_POINTS, 0, 1);
+        
+        // line p - tipping point 1
+        dotVertex = pVertices[1];
+        glUniform3f(shader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), &dotVertex, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_POINTS, 0, 1);
+
+        // line q - tipping point 0
+        dotVertex = qVertices[0];
+        glUniform3f(shader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), &dotVertex, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_POINTS, 0, 1);
+        
+        // line q - tipping point 1
+        dotVertex = qVertices[1];
+        glUniform3f(shader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), nullptr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), &dotVertex, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_POINTS, 0, 1);
+
         // intersected point
-        Vector3 intersectedPos;
-        if (lineIntersect(Line(pVertices[0], pVertices[1]), Line(qVertices[0], qVertices[1]), intersectedPos))
+        if (lineIntersect(Line(pVertices[0], pVertices[1]), Line(qVertices[0], qVertices[1]), tmpIntersectedPos))
         {
-            std::cout << intersectedPos.x << ", " << intersectedPos.y << ", " << intersectedPos.z << std::endl;
-
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(intersectedPos.x, intersectedPos.y, 0.0f));
-            model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
-            glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
-            glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.0f, 1.0f);
-
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 6, nullptr, GL_DYNAMIC_DRAW);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 6, recti, GL_DYNAMIC_DRAW);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
+            dotVertex = tmpIntersectedPos;
+            glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.0f, 0.0f);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), nullptr, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), &dotVertex, GL_DYNAMIC_DRAW);
+            glDrawArrays(GL_POINTS, 0, 1);
         }
     glBindVertexArray(0);
 }
@@ -454,7 +490,6 @@ void keyboardCB(double deltaTime)
 
 void initMem()
 {
-    // defined at z=-1.0f on xy plane
 }
 
 void destroyMem()
@@ -462,6 +497,7 @@ void destroyMem()
     glDeleteBuffers(2, vao);
     glDeleteBuffers(2, vbo);
     shader.Destroy();
+    dotShader.Destroy();
 }
 
 bool lineIntersect(const Line& p, const Line& q, Vector3& intersectedPos)
@@ -472,18 +508,12 @@ bool lineIntersect(const Line& p, const Line& q, Vector3& intersectedPos)
     glm::vec3 q0 = q.pos.toGLMvec3();
     glm::vec3 qDir = q.dir.toGLMvec3();
 
-    std::cout << glm::to_string(p0) << std::endl;
-    std::cout << glm::to_string(pDir) << std::endl;
-    std::cout << glm::to_string(q0) << std::endl;
-    std::cout << glm::to_string(qDir) << std::endl;
-
     glm::vec3 p_cross_q = glm::cross(pDir, qDir);
     if (std::isnan(p_cross_q.x) || std::isnan(p_cross_q.y) || std::isnan(p_cross_q.z))
         return false;       
     if (p_cross_q.x == 0 && p_cross_q.y == 0 && p_cross_q.z == 0)
         return false;
 
-    std::cout << "p_cross_q: " << glm::to_string(p_cross_q) << std::endl;
     glm::vec3 b = glm::cross(q0 - p0, qDir);
 
     float t = 0.0f;
@@ -494,7 +524,6 @@ bool lineIntersect(const Line& p, const Line& q, Vector3& intersectedPos)
     else if (p_cross_q.z != 0.0f)
         t = b.z / p_cross_q.z;
 
-    std::cout << "t: " << t << std::endl;
     glm::vec3 pout = p0 + pDir * t;
     intersectedPos.fromGLM(pout);
     return true;
