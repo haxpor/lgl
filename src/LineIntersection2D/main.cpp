@@ -22,9 +22,21 @@ struct Vector3
     Vector3(float x_, float y_, float z_): x(x_), y(y_), z(z_) {}
     Vector3(const Vector3& rhs): x(rhs.x), y(rhs.y), z(rhs.z) {}
 
-    Vector3 operator-(const Vector3& lhs) const
+    Vector3 operator-(const Vector3& rhs) const
     {
-        return Vector3(x - lhs.x, y - lhs.y, z - lhs.z);
+        return Vector3(x - rhs.x, y - rhs.y, z - rhs.z);
+    }
+    Vector3 operator+(const Vector3& rhs) const
+    {
+        return Vector3(x + rhs.x, y + rhs.y, z + rhs.z);
+    }
+    Vector3 operator*(const Vector3& rhs) const
+    {
+        return Vector3(x * rhs.x, y * rhs.y, z * rhs.z);
+    }
+    Vector3 operator*(const float& c) const
+    {
+        return Vector3(x * c, y * c, z * z);
     }
 
     Vector3& operator=(const Vector3& rhs)
@@ -102,10 +114,12 @@ Vector3 pVertices[2] = {
     Vector3(-0.5f, -0.5f, kVDepth),
     Vector3(0.5f, 0.2f, kVDepth)
 };
+Vector3 vl_pVertices[2];
 Vector3 qVertices[2] = {
     Vector3(-0.3f, 0.4f, kVDepth),
     Vector3(0.4f, -0.5f, kVDepth)
 };
+Vector3 vl_qVertices[2];
 Vector3 xAxis[2] = {
     Vector3(0.0f, 1.0f, kVDepth),
     Vector3(0.0f, -1.0f, kVDepth)
@@ -164,8 +178,6 @@ void initGL()
     glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
     glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
     std::cout << "OpenGL version in use: " << majorVersion << "." << minorVersion << std::endl;
-
-    glEnable(GL_DEPTH_TEST);
     
     // create shader
     int result = shader.Build("data2/trans.vert", "data2/color.frag");
@@ -219,7 +231,7 @@ void update(double dt)
 
 void render()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
     
     shader.Use();
@@ -246,10 +258,44 @@ void render()
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, yAxis, GL_STREAM_DRAW);
         glDrawArrays(GL_LINES, 0, 6);
 
+        // virtual line p
+        glUniform3f(shader.GetUniformLocation("color"), 0.5f, 0.0f, 0.0f);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, nullptr, GL_STREAM_DRAW);
+        {
+            Vector3 dir = pVertices[1] - pVertices[0];
+            // find coordinate at highest position in y-axis line can reach
+            // - find t
+            float t;
+            t = (-1.0f - pVertices[0].y) / dir.y;
+            // - substitute to find position
+            vl_pVertices[0] = pVertices[0] + dir * t;
+
+            // find coordinate at lowest position in y-axis line can reach
+            t = (1.0f - pVertices[0].y) / dir.y;
+            vl_pVertices[1] = pVertices[0] + dir * t;
+        }
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, vl_pVertices, GL_STREAM_DRAW);
+        glDrawArrays(GL_LINES, 0, 6);
+
         // line p
         glUniform3f(shader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, nullptr, GL_STREAM_DRAW);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, pVertices, GL_STREAM_DRAW);
+        glDrawArrays(GL_LINES, 0, 6);
+
+        // virtual line q
+        glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.5f, 0.0f);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, nullptr, GL_STREAM_DRAW);
+        {
+            Vector3 dir = qVertices[1] - qVertices[0];
+            float t;
+            t = (-1.0f - qVertices[0].y) / dir.y;
+            vl_qVertices[0] = qVertices[0] + dir * t;
+
+            t = (1.0f - qVertices[0].y) / dir.y;
+            vl_qVertices[1] = qVertices[0] + dir * t;
+        }
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, vl_qVertices, GL_STREAM_DRAW);
         glDrawArrays(GL_LINES, 0, 6);
 
         // line q
