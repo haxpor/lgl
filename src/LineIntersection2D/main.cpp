@@ -311,12 +311,24 @@ void render()
             // find coordinate at highest position in y-axis line can reach
             // - find t
             float t;
-            t = (-1.0f - pVertices[0].y) / dir.y;
+            float use_vertice, use_dir;
+            if (dir.x != 0.0f)
+            {
+                use_vertice = pVertices[0].x;
+                use_dir = dir.x;
+            }
+            else
+            {
+                use_vertice = pVertices[0].y;
+                use_dir = dir.y;
+            }
+
+            t = (-1.0f - use_vertice) / use_dir;
             // - substitute to find position
             vl_pVertices[0] = pVertices[0] + dir * t;
 
             // find coordinate at lowest position in y-axis line can reach
-            t = (1.0f - pVertices[0].y) / dir.y;
+            t = (1.0f - use_vertice) / use_dir;
             vl_pVertices[1] = pVertices[0] + dir * t;
         }
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, vl_pVertices, GL_STREAM_DRAW);
@@ -334,10 +346,22 @@ void render()
         {
             Vector3 dir = qVertices[1] - qVertices[0];
             float t;
-            t = (-1.0f - qVertices[0].y) / dir.y;
+            float use_vertice, use_dir;
+            if (dir.x != 0.0f)
+            {
+                use_vertice = qVertices[0].x;
+                use_dir = dir.x;
+            }
+            else
+            {
+                use_vertice = qVertices[0].y;
+                use_dir = dir.y;
+            }
+
+            t = (-1.0f - use_vertice) / use_dir;
             vl_qVertices[0] = qVertices[0] + dir * t;
 
-            t = (1.0f - qVertices[0].y) / dir.y;
+            t = (1.0f - use_vertice) / use_dir;
             vl_qVertices[1] = qVertices[0] + dir * t;
         }
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, vl_qVertices, GL_STREAM_DRAW);
