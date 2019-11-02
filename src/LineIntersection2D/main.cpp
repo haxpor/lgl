@@ -5,7 +5,23 @@
  *
  * Actually it's still 3D but we just work in xy plane.
  * This program determine and render intersection point between two lines.
+ *
+ * Note
+ *  - There are 2 copies of data one at application, and another at OpenGL on GPU's video memory.
+ *    We can modify a copy at application side at will, then make (sync or async) update such copy to OpenGL.
+ *    It's good to read more about implicit synchronization, and how to re-invalidate the buffer object at
+ *    Khronos official website detailing about OpenGL.
+ *  - Rendering line in 2d plane (at same level of depth) with depth testing enable would mess up
+ *    pixels output on screen. Disable it is better.
+ *
+ * Features
+ *  - configure slider UI to define two lines
+ *  - intersection point will be rendered if there is only
+ *  - self-implemented Vector3 / Line working in conjunction with glm::vec3 (we can use solely glm)
  */
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 #include "lgl/lgl.h"
 #include <iostream>
 #include <cstdlib>
@@ -87,6 +103,7 @@ void sys_mouseCB(GLFWwindow* window, double x, double y);
 ////////////////////////
 int initGLFW(int argc, char** argv);
 void initGL();
+void initImGUI();
 
 void initMem();
 void destroyMem();
@@ -96,6 +113,7 @@ void mouseCB(GLFWwindow* window, double dx, double dy);
 void mouseScrollCB(GLFWwindow* window, double dx, double dy);
 void update(double dt);
 void render();
+void renderGUI();
 
 // find intersection between line p and q
 // return true if two input lines intersected, `intersectedPos` is filled with intersection position.
@@ -222,6 +240,20 @@ void initGL()
     lgl::error::AnyGLError();
 
     std::cout << glfwGetVersionString() << std::endl;;
+
+    initImGUI();
+}
+
+void initImGUI()
+{
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
 }
 
 void update(double dt)
@@ -323,6 +355,52 @@ void render()
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
     glBindVertexArray(0);
+}
+
+void renderGUI()
+{
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+#define IMGUI_WINDOW_WIDTH 200
+#define IMGUI_WINDOW_HEIGHT 300
+#define IMGUI_WINDOW_MARGIN 5
+    ImGui::SetNextWindowSize(ImVec2(IMGUI_WINDOW_WIDTH, IMGUI_WINDOW_HEIGHT));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(IMGUI_WINDOW_WIDTH, IMGUI_WINDOW_HEIGHT), ImVec2(IMGUI_WINDOW_WIDTH,IMGUI_WINDOW_HEIGHT));
+    //ImGui::SetNextWindowPos(ImVec2(screenWidth - IMGUI_WINDOW_WIDTH - IMGUI_WINDOW_MARGIN, IMGUI_WINDOW_MARGIN));
+    ImGui::Begin("LineIntersection2D");
+        //static bool mm = true;
+        //ImGui::ShowDemoWindow(&mm);
+        
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+        ImGui::TextColored(ImVec4(1.0f,1.0f,1.0f,1.0f), "Line 1");
+        ImGui::PopStyleColor();
+        // every frame we invalidate the buffer, and submit new to OpenGL
+        ImGui::SliderFloat("P0 x", &pVertices[0].x, -0.5f, 0.5f, "%.2f");
+        ImGui::SliderFloat("P0 y", &pVertices[0].y, -0.5f, 0.5f, "%.2f");
+
+        // every frame we invalidate the buffer, and submit new to OpenGL
+        ImGui::SliderFloat("P1 x", &pVertices[1].x, -0.5f, 0.5f, "%.2f");
+        ImGui::SliderFloat("P1 y", &pVertices[1].y, -0.5f, 0.5f, "%.2f");
+
+        ImGui::Separator();
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.4f, 1.0f));
+        ImGui::TextColored(ImVec4(1.0f,1.0f,1.0f,1.0f), "Line 2");
+        ImGui::PopStyleColor();
+        // every frame we invalidate the buffer, and submit new to OpenGL
+        ImGui::SliderFloat("Q0 x", &qVertices[0].x, -0.5f, 0.5f, "%.2f");
+        ImGui::SliderFloat("Q0 y", &qVertices[0].y, -0.5f, 0.5f, "%.2f");
+
+        // every frame we invalidate the buffer, and submit new to OpenGL
+        ImGui::SliderFloat("Q1 x", &qVertices[1].x, -0.5f, 0.5f, "%.2f");
+        ImGui::SliderFloat("Q1 y", &qVertices[1].y, -0.5f, 0.5f, "%.2f");
+            
+    ImGui::End();
+    
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void reshapeCB(GLFWwindow* window, int w, int h)
@@ -439,6 +517,7 @@ int main(int argc, char** argv)
         keyboardCB(delta);
         update(delta);
         render();
+        renderGUI();
 
         glfwSwapBuffers(window);
     }
