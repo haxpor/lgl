@@ -379,28 +379,28 @@ void render()
 
         // line p - tipping point 0
         dotVertex = pVertices[0];
-        glUniform3f(shader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
+        glUniform3f(dotShader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), nullptr, GL_DYNAMIC_DRAW);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), &dotVertex, GL_DYNAMIC_DRAW);
         glDrawArrays(GL_POINTS, 0, 1);
         
         // line p - tipping point 1
         dotVertex = pVertices[1];
-        glUniform3f(shader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
+        glUniform3f(dotShader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), nullptr, GL_DYNAMIC_DRAW);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), &dotVertex, GL_DYNAMIC_DRAW);
         glDrawArrays(GL_POINTS, 0, 1);
 
         // line q - tipping point 0
         dotVertex = qVertices[0];
-        glUniform3f(shader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
+        glUniform3f(dotShader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), nullptr, GL_DYNAMIC_DRAW);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), &dotVertex, GL_DYNAMIC_DRAW);
         glDrawArrays(GL_POINTS, 0, 1);
         
         // line q - tipping point 1
         dotVertex = qVertices[1];
-        glUniform3f(shader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
+        glUniform3f(dotShader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), nullptr, GL_DYNAMIC_DRAW);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), &dotVertex, GL_DYNAMIC_DRAW);
         glDrawArrays(GL_POINTS, 0, 1);
@@ -409,7 +409,7 @@ void render()
         if (lineIntersect(Line(pVertices[0], pVertices[1]), Line(qVertices[0], qVertices[1]), tmpIntersectedPos))
         {
             dotVertex = tmpIntersectedPos;
-            glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.0f, 0.0f);
+            glUniform3f(dotShader.GetUniformLocation("color"), 0.0f, 0.0f, 0.0f);
             glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), nullptr, GL_DYNAMIC_DRAW);
             glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3), &dotVertex, GL_DYNAMIC_DRAW);
             glDrawArrays(GL_POINTS, 0, 1);
