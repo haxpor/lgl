@@ -144,12 +144,6 @@ glm::vec3 cubePositions[] = {
   glm::vec3(-1.3f,  1.0f, -1.5f)
 };
 
-unsigned int indices[] =
-{
-    0, 1, 2,
-    0, 2, 3
-};
-
 float gizmoUpLinePoints[] = {
     0.0f, 0.0f, 0.0f,
     0.0f, 0.30f, 0.0f
