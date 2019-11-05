@@ -147,14 +147,6 @@ Vector3 yAxis[6] = {
     Vector3(-1.0f, 0.0f, kVDepth),
     Vector3(1.0f, 0.0f, kVDepth)
 };
-Vector3 recti[6] = {
-    Vector3(0.1f, 0.1f, kVDepth),
-    Vector3(-0.1f, 0.1f, kVDepth),
-    Vector3(-0.1f, -0.1f, kVDepth),
-    Vector3(0.1f, 0.1f, kVDepth),
-    Vector3(-0.1f, -0.1f, kVDepth),
-    Vector3(0.1f, -0.1f, kVDepth)
-};
 
 Vector3 dotVertex;
 Vector3 tmpIntersectedPos;
