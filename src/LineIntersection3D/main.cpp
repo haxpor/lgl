@@ -202,6 +202,8 @@ void initGL()
     int result = shader.Build("data2/trans.vert", "data2/color.frag");
     LGL_ERROR_QUIT(result, "Error creating shader");
 
+    glEnable(GL_DEPTH_TEST);
+
     // create buffer objects
     glGenVertexArrays(2, vao);
     glGenBuffers(2, vbo);
@@ -274,7 +276,7 @@ void update(double dt)
 
 void render()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
     
     shader.Use();
