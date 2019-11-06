@@ -528,12 +528,12 @@ void mouseScrollCB(GLFWwindow* window, double dx, double dy)
 {
     if (!ImGui::IsAnyWindowHovered() && !ImGui::IsAnyItemHovered())
     {
-        if (camFov >= 1.0f && camFov <= 45.0f)
+        if (camFov >= 1.0f && camFov <= 60.0f)
             camFov -= dy;
         if (camFov < 1.0f)
             camFov = 1.0f;
-        if (camFov > 45.0f)
-            camFov = 45.0f;
+        if (camFov > 60.0f)
+            camFov = 60.0f;
 
         shader.Use();
         projection = glm::perspective(glm::radians(camFov), screenWidth * 1.0f / screenHeight, 0.1f, 100.0f);
