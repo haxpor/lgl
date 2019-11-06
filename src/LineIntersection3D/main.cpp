@@ -14,9 +14,12 @@
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+#include <limits>
 
 // we need vec3 rotation
 #include "glm/gtx/vector_angle.hpp"
+
+constexpr const float kEpsilon = std::numeric_limits<float>::epsilon();
 
 // this can use glm::vec3 instead, but anyway custom structs are part of testbed
 struct Vector3
@@ -66,6 +69,11 @@ struct Vector3
         z = rhs.z;
     }
 };
+std::ostream& operator<<(std::ostream& os, const Vector3& v)
+{
+    os << "Vector3(" << v.x << ", " << v.y << ", " << v.z << ")";
+    return os;
+}
 
 struct Line
 {
@@ -420,7 +428,7 @@ void renderGUI()
     ImGui::NewFrame();
 
 #define IMGUI_WINDOW_WIDTH 200
-#define IMGUI_WINDOW_HEIGHT 300
+#define IMGUI_WINDOW_HEIGHT 350
 #define IMGUI_WINDOW_MARGIN 5
     ImGui::SetNextWindowSize(ImVec2(IMGUI_WINDOW_WIDTH, IMGUI_WINDOW_HEIGHT));
     ImGui::SetNextWindowSizeConstraints(ImVec2(IMGUI_WINDOW_WIDTH, IMGUI_WINDOW_HEIGHT), ImVec2(IMGUI_WINDOW_WIDTH,IMGUI_WINDOW_HEIGHT));
@@ -579,31 +587,45 @@ void destroyMem()
 
 bool lineIntersect(const Line& p, const Line& q, Vector3& intersectedPos)
 {
-    // convert into glm::vec3 to make use of its glm::cross
     glm::vec3 p0 = p.pos.toGLMvec3();
     glm::vec3 pDir = p.dir.toGLMvec3();
     glm::vec3 q0 = q.pos.toGLMvec3();
     glm::vec3 qDir = q.dir.toGLMvec3();
 
-    glm::vec3 p_cross_q = glm::cross(pDir, qDir);
-    if (std::isnan(p_cross_q.x) || std::isnan(p_cross_q.y) || std::isnan(p_cross_q.z))
-        return false;       
-    if (p_cross_q.x == 0.0f && p_cross_q.y == 0.0f && p_cross_q.z == 0.0f)
+    float a = glm::dot(pDir, pDir);
+    float b = glm::dot(pDir, qDir);
+    float c = glm::dot(qDir, qDir);
+    float d = glm::dot(p0-q0, pDir);
+    float e = glm::dot(p0-q0, qDir);
+
+    // special check for parallel lines (also in the same direction, perpendicular case is not considered
+    // parallel although not intersected!)
+    float denom = b*b - a*c;
+    if (std::abs(denom) <= kEpsilon)
+    {
+        // solve for parallel distance
+        float t = d / b;
+        float dist = glm::length(p0-q0 - qDir*t);
+        if (dist <= 0.01f)
+        {
+            glm::vec3 pout = q0 + qDir*t;
+            intersectedPos.fromGLM(pout);
+            return true;
+        }
         return false;
+    }
 
-    glm::vec3 b = glm::cross(q0 - p0, qDir);
+    float s = (-e*b + c*d) / denom;
+    float t = (b*d - a*e) / denom;
+    float dist = glm::length(p0-q0 + pDir*s - qDir*t);
+    if (dist <= 0.01f)
+    {
+        glm::vec3 pout = q0 + qDir*t;
+        intersectedPos.fromGLM(pout);
+        return true;
+    }
 
-    float t = 0.0f;
-    if (p_cross_q.x != 0.0f)
-        t = b.x / p_cross_q.x;
-    else if (p_cross_q.y != 0.0f)
-        t = b.y / p_cross_q.y;
-    else if (p_cross_q.z != 0.0f)
-        t = b.z / p_cross_q.z;
-
-    glm::vec3 pout = p0 + pDir * t;
-    intersectedPos.fromGLM(pout);
-    return true;
+    return false;
 }
 
 int main(int argc, char** argv)
