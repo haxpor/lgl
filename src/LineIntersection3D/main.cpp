@@ -128,12 +128,12 @@ Vector3 pVertices[2] = {
     Vector3(-0.5f, -0.5f, 0.5f),
     Vector3(0.5f, 0.2f, -0.5f)
 };
-Vector3 vl_pVertices[2];
+Vector3 vl_pVertices[4];
 Vector3 qVertices[2] = {
     Vector3(-0.3f, 0.4f, 0.5f),
     Vector3(0.4f, -0.5f, -0.5f)
 };
-Vector3 vl_qVertices[2];
+Vector3 vl_qVertices[4];
 Vector3 xAxis[2] = {
     Vector3(0.0f, 1.0f, 0.0f),
     Vector3(0.0f, -1.0f, 0.0f)
@@ -303,36 +303,27 @@ void render()
         glUniform3f(shader.GetUniformLocation("color"), 0.5f, 0.0f, 0.0f);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, nullptr, GL_STREAM_DRAW);
         {
-            Vector3 dir = pVertices[1] - pVertices[0];
-            // find coordinate at highest position in y-axis line can reach
-            // - find t
-            float t;
-            float use_vertice, use_dir;
-            if (dir.x != 0.0f)
+            glm::vec3 dir = glm::normalize((pVertices[1] - pVertices[0]).toGLMvec3());
+            // determine which which tip-end is positive based on computed direction
+            float dotProduct0 = glm::dot(pVertices[0].toGLMvec3(), dir);
+            float dotProduct1 = glm::dot(pVertices[1].toGLMvec3(), dir);
+            float dirFactor = 1.0f; // initially positive end is at pVertices[1]
+            if (dotProduct0 > dotProduct1)
             {
-                use_vertice = pVertices[0].x;
-                use_dir = dir.x;
-            }
-            else if (dir.y != 0.0f)
-            {
-                use_vertice = pVertices[0].y;
-                use_dir = dir.y;
-            }
-            else
-            {
-                use_vertice = pVertices[0].z;
-                use_dir = dir.z;
+                // positive end is at pVertices[0] instead
+                dirFactor = -1.0f;
             }
 
-            t = (-1.0f - use_vertice) / use_dir;
-            // - substitute to find position
-            vl_pVertices[0] = pVertices[0] + dir * t;
-
-            // find coordinate at lowest position in y-axis line can reach
-            t = (1.0f - use_vertice) / use_dir;
-            vl_pVertices[1] = pVertices[0] + dir * t;
+            // start from both of the tips of the line and go both way of negative and positive
+            // for amount of 1.0f
+            vl_pVertices[0].fromGLM(pVertices[0].toGLMvec3());
+            vl_pVertices[1].fromGLM(pVertices[0].toGLMvec3() + dir*(-dirFactor));
+            vl_pVertices[2].fromGLM(pVertices[1].toGLMvec3());
+            vl_pVertices[3].fromGLM(pVertices[1].toGLMvec3() + dir*dirFactor);
         }
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, vl_pVertices, GL_STREAM_DRAW);
+        glDrawArrays(GL_LINES, 0, 6);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, vl_pVertices + 2, GL_STREAM_DRAW);
         glDrawArrays(GL_LINES, 0, 6);
 
         // line p
@@ -345,32 +336,28 @@ void render()
         glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.5f, 0.0f);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, nullptr, GL_STREAM_DRAW);
         {
-            Vector3 dir = qVertices[1] - qVertices[0];
-            float t;
-            float use_vertice, use_dir;
-            if (dir.x != 0.0f)
+            glm::vec3 dir = glm::normalize((qVertices[1] - qVertices[0]).toGLMvec3());
+            // determine which which tip-end is positive based on computed direction
+            float dotProduct0 = glm::dot(qVertices[0].toGLMvec3(), dir);
+            float dotProduct1 = glm::dot(qVertices[1].toGLMvec3(), dir);
+            float dirFactor = 1.0f; // initially positive end is at pVertices[1]
+            if (dotProduct0 > dotProduct1)
             {
-                use_vertice = qVertices[0].x;
-                use_dir = dir.x;
-            }
-            else if (dir.y != 0.0f)
-            {
-                use_vertice = qVertices[0].y;
-                use_dir = dir.y;
-            }
-            else
-            {
-                use_vertice = qVertices[0].z;
-                use_dir = dir.z;
+                // positive end is at pVertices[0] instead
+                dirFactor = -1.0f;
             }
 
-            t = (-1.0f - use_vertice) / use_dir;
-            vl_qVertices[0] = qVertices[0] + dir * t;
+            // start from both of the tips of the line and go both way of negative and positive
+            // for amount of 1.0f
+            vl_qVertices[0].fromGLM(qVertices[0].toGLMvec3());
+            vl_qVertices[1].fromGLM(qVertices[0].toGLMvec3() + dir*(-dirFactor));
+            vl_qVertices[2].fromGLM(qVertices[1].toGLMvec3());
+            vl_qVertices[3].fromGLM(qVertices[1].toGLMvec3() + dir*dirFactor);
 
-            t = (1.0f - use_vertice) / use_dir;
-            vl_qVertices[1] = qVertices[0] + dir * t;
         }
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, vl_qVertices, GL_STREAM_DRAW);
+        glDrawArrays(GL_LINES, 0, 6);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, vl_qVertices + 2, GL_STREAM_DRAW);
         glDrawArrays(GL_LINES, 0, 6);
 
         // line q
