@@ -9,3 +9,6 @@ tags
 
 # vim session
 *.vim
+
+# imgui session save file
+imgui.ini
