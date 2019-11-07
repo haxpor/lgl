@@ -126,8 +126,8 @@ bool lineIntersect(const Line& p, const Line& q, Vector3& intersectedPos);
 /// global variables
 ////////////////////////
 glm::mat4 view, projection;
-GLuint vao[2];
-GLuint vbo[2];
+GLuint vao;
+GLuint vbo;
 lgl::Shader shader;
 Sphere dot(20, 20, 0.03f);
 Gizmo gizmo;
@@ -213,26 +213,18 @@ void initGL()
     glEnable(GL_DEPTH_TEST);
 
     // create buffer objects
-    glGenVertexArrays(2, vao);
-    glGenBuffers(2, vbo);
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
 
     // prepare for line vao
-    glBindVertexArray(vao[0]);
+    glBindVertexArray(vao);
         // a single VBO shares both vertices from both p and q lines to render on screen
         // although having dedicated VBO for each line should be higher performance, but this is also
         // another testbed setup for this program
         //
         // so we supply 'data` parameter as nullptr and we will do buffer update in render loop
-        glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, nullptr, GL_STREAM_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3), nullptr);
-        glEnableVertexAttribArray(0);
-    glBindVertexArray(0);
-
-    // prepare for rect (intersection) vao
-    glBindVertexArray(vao[1]);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 4, nullptr, GL_DYNAMIC_DRAW);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3), nullptr);
         glEnableVertexAttribArray(0);
     glBindVertexArray(0);
@@ -289,8 +281,8 @@ void render()
     
     shader.Use();
 
-    glBindVertexArray(vao[0]);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    glBindVertexArray(vao);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
         // x-axis
         glUniform3f(shader.GetUniformLocation("color"), 1.0f, 1.0f, 1.0f);
         // invalidate entire buffer (orphan)
@@ -579,8 +571,8 @@ void initMem()
 
 void destroyMem()
 {
-    glDeleteBuffers(2, vao);
-    glDeleteBuffers(2, vbo);
+    glDeleteBuffers(1, &vao);
+    glDeleteBuffers(1, &vbo);
     shader.Destroy();
     dot.destroyGLObjects();
 }
