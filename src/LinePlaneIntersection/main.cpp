@@ -31,6 +31,21 @@ struct Line
     {}
 };
 
+struct Plane
+{
+    glm::vec3 pos0;
+    glm::vec3 pos1;
+    glm::vec3 normal;
+
+    /// create a new plane from two positions on the plane, and normal vector
+    /// normal will be normalized
+    Plane(glm::vec3 p0, glm::vec3 p1, glm::vec3 n):
+        pos0(p0),
+        pos1(p1),
+        normal(glm::normalize(n))
+    { }
+};
+
 int screenWidth = 800;
 int screenHeight = 600;
 GLFWwindow* window = nullptr;
@@ -62,14 +77,17 @@ void render();
 void renderGizmo();
 void renderGUI();
 
-// find intersection between line p and q
-// return true if two input lines intersected, `intersectedPos` is filled with intersection position.
-// Otherwise return false, and `intersectedPos` is left intact. 
-bool lineIntersect(const Line& p, const Line& q, glm::vec3& intersectedPos);
+/// render plane in geometry approach
+/// geometry approach in this case involves pre-define plane's vertice with orientation into certain
+/// direction (for us, it's into +z-axis). Then calculate two angles (yaw, and pitch) with no need for
+/// roll angle to be computed to create a transform matrix to update to OpenGL's uniform.
+///
+/// Plane's normal needs to be normalized.
+void renderPlane_geometry(const Plane& p);
 
 /// find intersection between line-plane
 /// return intersected position
-//bool linePlaneIntersect(const Line& l, const Plane& p, const glm::vec3& intersectedPos);
+bool linePlaneIntersect(const Line& l, const Plane& p, glm::vec3& intersectedPos);
 
 ////////////////////////
 /// global variables
@@ -83,14 +101,11 @@ Gizmo gizmo;
 
 glm::vec3 pVertices[2] = {
     glm::vec3(-0.5f, -0.5f, 0.5f),
-    glm::vec3(0.5f, 0.2f, -0.5f)
+    glm::vec3(0.5f, 0.47f, -0.5f)
 };
 glm::vec3 vl_pVertices[4];
-glm::vec3 qVertices[2] = {
-    glm::vec3(-0.3f, 0.4f, 0.5f),
-    glm::vec3(0.4f, -0.5f, -0.5f)
-};
-glm::vec3 vl_qVertices[4];
+Plane plane(glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.0f, 0.3f, -0.2f), glm::vec3(1.0f, 1.0f, 1.0f));
+glm::vec3 planeNotNecessaryNormalizedNormal = plane.normal;
 glm::vec3 xAxis[2] = {
     glm::vec3(0.0f, 1.0f, 0.0f),
     glm::vec3(0.0f, -1.0f, 0.0f)
@@ -99,6 +114,15 @@ glm::vec3 yAxis[6] = {
     glm::vec3(-1.0f, 0.0f, 0.0f),
     glm::vec3(1.0f, 0.0f, 0.0f)
 };
+
+// plane vertices for geometry way of calculation
+glm::vec3 planeVertices[4] = {
+    glm::vec3(0.5f, 0.5f, 0.0f),
+    glm::vec3(-0.5f, 0.5f, 0.0f),
+    glm::vec3(0.5f, -0.5f, 0.0f),
+    glm::vec3(-0.5f, -0.5f, 0.0f)
+};
+glm::vec3 planeNormalLineVertices[2];
 
 glm::vec3 dotVertex;
 glm::vec3 tmpIntersectedPos;
@@ -178,7 +202,7 @@ void initGL()
         glEnableVertexAttribArray(0);
     glBindVertexArray(0);
 
-    // prepare for rect (intersection) vao
+    // prepare for plane vao
     glBindVertexArray(vao[1]);
         glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 4, nullptr, GL_DYNAMIC_DRAW);
@@ -231,6 +255,43 @@ void update(double dt)
 {
 }
 
+// required: 'shader' is active
+void renderPlane_geometry(const Plane& p)
+{
+    float pitch = std::asin(p.normal.y);
+    float yaw = std::asin(p.normal.x / std::cos(pitch));
+
+    glm::mat4 model = glm::mat4(1.0f);
+    // use the followin sequence of matrix multiplication
+    //model = glm::translate(model, p.pos0);
+    //model = glm::rotate(model, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+    //model = glm::rotate(model, -pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    // or use the following in one line
+    model = glm::translate(model, p.pos0) * glm::rotate(model, yaw, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::rotate(model, -pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.6f, 0.7f);
+
+    // 1. render plane
+    // invalidate entire buffer (orphan)
+    // invalidate will put old storage on the free list once there is no other rendering commands
+    // using it. Same goes for other lines.
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 4, nullptr, GL_DYNAMIC_DRAW);
+    // update buffer
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 4, planeVertices, GL_DYNAMIC_DRAW);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    // (reset matrix back to normal)
+    glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
+
+    // 2. render plane normal
+    planeNormalLineVertices[0] = p.pos0;
+    planeNormalLineVertices[1] = p.pos0 + 0.5f*p.normal;
+    glUniform3f(shader.GetUniformLocation("color"), 1.0f, 1.0f, 0.0f);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, planeNormalLineVertices, GL_STREAM_DRAW);
+    glDrawArrays(GL_LINES, 0, 2);
+}
+
 void render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -240,21 +301,20 @@ void render()
 
     glBindVertexArray(vao[0]);
         glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+        // plane
+        renderPlane_geometry(plane);
+
         // x-axis
         glUniform3f(shader.GetUniformLocation("color"), 1.0f, 1.0f, 1.0f);
-        // invalidate entire buffer (orphan)
-        // invalidate will put old storage on the free list once there is no other rendering commands
-        // using it. Same goes for other lines.
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, nullptr, GL_STREAM_DRAW);
-        // update buffer
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, xAxis, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
+        glDrawArrays(GL_LINES, 0, 2);
 
         // y-axis
         glUniform3f(shader.GetUniformLocation("color"), 1.0f, 1.0f, 1.0f);
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, nullptr, GL_STREAM_DRAW);
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, yAxis, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
+        glDrawArrays(GL_LINES, 0, 2);
 
         // virtual line p
         glUniform3f(shader.GetUniformLocation("color"), 0.5f, 0.0f, 0.0f);
@@ -279,49 +339,15 @@ void render()
             vl_pVertices[3] = pVertices[1] + dir*dirFactor;
         }
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, vl_pVertices, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
+        glDrawArrays(GL_LINES, 0, 2);
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, vl_pVertices + 2, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
+        glDrawArrays(GL_LINES, 0, 2);
 
         // line p
         glUniform3f(shader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, nullptr, GL_STREAM_DRAW);
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, pVertices, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
-
-        // virtual line q
-        glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.5f, 0.0f);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, nullptr, GL_STREAM_DRAW);
-        {
-            glm::vec3 dir = glm::normalize((qVertices[1] - qVertices[0]));
-            // determine which which tip-end is positive based on computed direction
-            float dotProduct0 = glm::dot(qVertices[0], dir);
-            float dotProduct1 = glm::dot(qVertices[1], dir);
-            float dirFactor = 1.0f; // initially positive end is at pVertices[1]
-            if (dotProduct0 > dotProduct1)
-            {
-                // positive end is at pVertices[0] instead
-                dirFactor = -1.0f;
-            }
-
-            // start from both of the tips of the line and go both way of negative and positive
-            // for amount of 1.0f
-            vl_qVertices[0] = qVertices[0];
-            vl_qVertices[1] = qVertices[0] + dir*(-dirFactor);
-            vl_qVertices[2] = qVertices[1];
-            vl_qVertices[3] = qVertices[1] + dir*dirFactor;
-
-        }
-        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, vl_qVertices, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, vl_qVertices + 2, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
-
-        // line q
-        glUniform3f(shader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, nullptr, GL_STREAM_DRAW);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, qVertices, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
+        glDrawArrays(GL_LINES, 0, 2);
 
     dot.shader.Use();
     dot.drawBatchBegin();
@@ -339,22 +365,8 @@ void render()
                 glm::value_ptr(glm::translate(glm::mat4(1.0f), dotVertex)));
         dot.drawBatchDraw();
 
-        // line q - tipping point 0
-        dotVertex = qVertices[0];
-        glUniform3f(dot.shader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
-        glUniformMatrix4fv(dot.shader.GetUniformLocation("model"), 1, GL_FALSE,
-                glm::value_ptr(glm::translate(glm::mat4(1.0f), dotVertex)));
-        dot.drawBatchDraw();
-        
-        // line q - tipping point 1
-        dotVertex = qVertices[1];
-        glUniform3f(dot.shader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
-        glUniformMatrix4fv(dot.shader.GetUniformLocation("model"), 1, GL_FALSE,
-                glm::value_ptr(glm::translate(glm::mat4(1.0f), dotVertex)));
-        dot.drawBatchDraw();
-
         // intersected point
-        if (lineIntersect(Line(pVertices[0], pVertices[1]), Line(qVertices[0], qVertices[1]), tmpIntersectedPos))
+        if (linePlaneIntersect(Line(pVertices[0], pVertices[1]), plane, tmpIntersectedPos))
         {
             dotVertex = tmpIntersectedPos;
             glUniform3f(dot.shader.GetUniformLocation("color"), 0.0f, 0.0f, 0.0f);
@@ -377,7 +389,7 @@ void renderGUI()
     ImGui::NewFrame();
 
 #define IMGUI_WINDOW_WIDTH 200
-#define IMGUI_WINDOW_HEIGHT 350
+#define IMGUI_WINDOW_HEIGHT 290
 #define IMGUI_WINDOW_MARGIN 5
     ImGui::SetNextWindowSize(ImVec2(IMGUI_WINDOW_WIDTH, IMGUI_WINDOW_HEIGHT));
     ImGui::SetNextWindowSizeConstraints(ImVec2(IMGUI_WINDOW_WIDTH, IMGUI_WINDOW_HEIGHT), ImVec2(IMGUI_WINDOW_WIDTH,IMGUI_WINDOW_HEIGHT));
@@ -386,9 +398,7 @@ void renderGUI()
         //static bool mm = true;
         //ImGui::ShowDemoWindow(&mm);
         
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-        ImGui::TextColored(ImVec4(1.0f,1.0f,1.0f,1.0f), "Line 1");
-        ImGui::PopStyleColor();
+        ImGui::TextColored(ImVec4(1.0f,0.0f,0.0f,1.0f), "Line");
         // every frame we invalidate the buffer, and submit new to OpenGL
         ImGui::SliderFloat("P0 x", &pVertices[0].x, -0.5f, 0.5f, "%.2f");
         ImGui::SliderFloat("P0 y", &pVertices[0].y, -0.5f, 0.5f, "%.2f");
@@ -400,18 +410,19 @@ void renderGUI()
 
         ImGui::Separator();
 
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.4f, 1.0f));
-        ImGui::TextColored(ImVec4(1.0f,1.0f,1.0f,1.0f), "Line 2");
-        ImGui::PopStyleColor();
-        // every frame we invalidate the buffer, and submit new to OpenGL
-        ImGui::SliderFloat("Q0 x", &qVertices[0].x, -0.5f, 0.5f, "%.2f");
-        ImGui::SliderFloat("Q0 y", &qVertices[0].y, -0.5f, 0.5f, "%.2f");
-        ImGui::SliderFloat("Q0 z", &qVertices[0].z, -0.5f, 0.5f, "%.2f");
+        ImGui::TextColored(ImVec4(0.0f,1.0f,1.0f,1.0f), "Plane");
+        // plane normal
+        bool isPlaneNormalModified = false;
+        if (ImGui::SliderFloat("Norm x", &planeNotNecessaryNormalizedNormal.x, -1.0f, 1.0f, "%.2f"))
+            isPlaneNormalModified = true;
+        if (ImGui::SliderFloat("Norm y", &planeNotNecessaryNormalizedNormal.y, -1.0f, 1.0f, "%.2f"))
+            isPlaneNormalModified = true;
+        if (ImGui::SliderFloat("Norm z", &planeNotNecessaryNormalizedNormal.z, -1.0f, 1.0f, "%.2f"))
+            isPlaneNormalModified = true;
 
-        // every frame we invalidate the buffer, and submit new to OpenGL
-        ImGui::SliderFloat("Q1 x", &qVertices[1].x, -0.5f, 0.5f, "%.2f");
-        ImGui::SliderFloat("Q1 y", &qVertices[1].y, -0.5f, 0.5f, "%.2f");
-        ImGui::SliderFloat("Q1 z", &qVertices[1].z, -0.5f, 0.5f, "%.2f");
+        // TODO: probably need to check all zeros case which is not valid for plane's normal
+        if (isPlaneNormalModified)
+            plane.normal = glm::normalize(planeNotNecessaryNormalizedNormal);
             
     ImGui::End();
     
@@ -534,45 +545,26 @@ void destroyMem()
     dot.destroyGLObjects();
 }
 
-bool lineIntersect(const Line& p, const Line& q, glm::vec3& intersectedPos)
+bool linePlaneIntersect(const Line& l, const Plane& p, glm::vec3& intersectedPos)
 {
-    glm::vec3 p0 = p.pos;
-    glm::vec3 pDir = p.dir;
-    glm::vec3 q0 = q.pos;
-    glm::vec3 qDir = q.dir;
+    glm::vec3 n = p.normal;
+    glm::vec3 pv = p.pos0;
+    glm::vec3 v = l.pos;
+    glm::vec3 vdir = l.dir;
 
-    float a = glm::dot(pDir, pDir);
-    float b = glm::dot(pDir, qDir);
-    float c = glm::dot(qDir, qDir);
-    float d = glm::dot(p0-q0, pDir);
-    float e = glm::dot(p0-q0, qDir);
-
-    // special check for parallel lines (also in the same direction, perpendicular case is not considered
-    // parallel although not intersected!)
-    float denom = b*b - a*c;
+    float d = -(n.x*pv.x + n.y*pv.y + n.z*pv.z);
+    float denom = (n.x*vdir.x + n.y*vdir.y + n.z*vdir.z);
     if (std::abs(denom) <= kEpsilon)
-    {
-        // solve for parallel distance
-        float t = d / b;
-        float dist = glm::length(p0-q0 - qDir*t);
-        if (dist <= 0.01f)
-        {
-            intersectedPos = q0 + qDir*t;
-            return true;
-        }
         return false;
-    }
+    float t = -(n.x*v.x + n.y*v.y + n.z*v.z + d) / denom;
+    
+    // (optional) check segment, only intersection can happen within the defined segment of the line
+    // and within the plane itself (t = 0) (not extended unlimited)
+    if (t <= 0.0f || t > 1.0f)
+        return false;
 
-    float s = (-e*b + c*d) / denom;
-    float t = (b*d - a*e) / denom;
-    float dist = glm::length(p0-q0 + pDir*s - qDir*t);
-    if (dist <= 0.01f)
-    {
-        intersectedPos = q0 + qDir*t;
-        return true;
-    }
-
-    return false;
+    intersectedPos = v + vdir*t;
+    return true;
 }
 
 int main(int argc, char** argv)
