@@ -95,9 +95,6 @@ void Sphere::buildVertexSpecifications()
     const float kPhiStepAngle = glm::radians(std::ceil(180.0f / numStacks));
     const float kThetaStepAngle = glm::radians(std::ceil(360.0f / numSectors));
 
-    std::cout << "kPhiStepAngle: " << kPhiStepAngle << " rad | " << glm::degrees(kPhiStepAngle) << " degrees" << std::endl;
-    std::cout << "kThetaStepAngle: " << kThetaStepAngle << " rad | " << glm::degrees(kThetaStepAngle) << " degrees" << std::endl;
-
     vertices.clear();
     indices.clear();
 
