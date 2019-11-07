@@ -33,17 +33,20 @@ struct Line
 
 struct Plane
 {
-    glm::vec3 pos0;
-    glm::vec3 pos1;
+    glm::vec3 pos;
     glm::vec3 normal;
 
-    /// create a new plane from two positions on the plane, and normal vector
-    /// normal will be normalized
-    Plane(glm::vec3 p0, glm::vec3 p1, glm::vec3 n):
-        pos0(p0),
-        pos1(p1),
+    /// create a plane from known point on the plane, and normal vector
+    /// normal will be automatically normalized
+    Plane(glm::vec3 p, glm::vec3 n):
+        pos(p),
         normal(glm::normalize(n))
     { }
+
+    float getD() const
+    {
+        return -(normal.x*pos.x + normal.y*pos.y + normal.z*pos.z);
+    }
 };
 
 int screenWidth = 800;
@@ -104,7 +107,7 @@ glm::vec3 pVertices[2] = {
     glm::vec3(0.5f, 0.47f, -0.5f)
 };
 glm::vec3 vl_pVertices[4];
-Plane plane(glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.0f, 0.3f, -0.2f), glm::vec3(1.0f, 1.0f, 1.0f));
+Plane plane(glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 glm::vec3 planeNotNecessaryNormalizedNormal = plane.normal;
 glm::vec3 xAxis[2] = {
     glm::vec3(0.0f, 1.0f, 0.0f),
@@ -267,7 +270,7 @@ void renderPlane_geometry(const Plane& p)
     //model = glm::rotate(model, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
     //model = glm::rotate(model, -pitch, glm::vec3(1.0f, 0.0f, 0.0f));
     // or use the following in one line
-    model = glm::translate(model, p.pos0) * glm::rotate(model, yaw, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::rotate(model, -pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::translate(model, p.pos) * glm::rotate(model, yaw, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::rotate(model, -pitch, glm::vec3(1.0f, 0.0f, 0.0f));
     glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
     glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.6f, 0.7f);
 
@@ -284,8 +287,8 @@ void renderPlane_geometry(const Plane& p)
     glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
 
     // 2. render plane normal
-    planeNormalLineVertices[0] = p.pos0;
-    planeNormalLineVertices[1] = p.pos0 + 0.5f*p.normal;
+    planeNormalLineVertices[0] = p.pos;
+    planeNormalLineVertices[1] = p.pos + 0.5f*p.normal;
     glUniform3f(shader.GetUniformLocation("color"), 1.0f, 1.0f, 0.0f);
     glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, nullptr, GL_STREAM_DRAW);
     glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, planeNormalLineVertices, GL_STREAM_DRAW);
@@ -548,11 +551,10 @@ void destroyMem()
 bool linePlaneIntersect(const Line& l, const Plane& p, glm::vec3& intersectedPos)
 {
     glm::vec3 n = p.normal;
-    glm::vec3 pv = p.pos0;
     glm::vec3 v = l.pos;
     glm::vec3 vdir = l.dir;
 
-    float d = -(n.x*pv.x + n.y*pv.y + n.z*pv.z);
+    float d = p.getD();
     float denom = (n.x*vdir.x + n.y*vdir.y + n.z*vdir.z);
     if (std::abs(denom) <= kEpsilon)
         return false;
