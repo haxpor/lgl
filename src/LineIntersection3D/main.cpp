@@ -291,13 +291,13 @@ void render()
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, nullptr, GL_STREAM_DRAW);
         // update buffer
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, xAxis, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
+        glDrawArrays(GL_LINES, 0, 2);
 
         // y-axis
         glUniform3f(shader.GetUniformLocation("color"), 1.0f, 1.0f, 1.0f);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, nullptr, GL_STREAM_DRAW);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, yAxis, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
+        glDrawArrays(GL_LINES, 0, 2);
 
         // virtual line p
         glUniform3f(shader.GetUniformLocation("color"), 0.5f, 0.0f, 0.0f);
@@ -322,15 +322,15 @@ void render()
             vl_pVertices[3].fromGLM(pVertices[1].toGLMvec3() + dir*dirFactor);
         }
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, vl_pVertices, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
+        glDrawArrays(GL_LINES, 0, 2);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, vl_pVertices + 2, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
+        glDrawArrays(GL_LINES, 0, 2);
 
         // line p
         glUniform3f(shader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, nullptr, GL_STREAM_DRAW);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, pVertices, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
+        glDrawArrays(GL_LINES, 0, 2);
 
         // virtual line q
         glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.5f, 0.0f);
@@ -356,15 +356,15 @@ void render()
 
         }
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, vl_qVertices, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
+        glDrawArrays(GL_LINES, 0, 2);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, vl_qVertices + 2, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
+        glDrawArrays(GL_LINES, 0, 2);
 
         // line q
         glUniform3f(shader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, nullptr, GL_STREAM_DRAW);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * 2, qVertices, GL_STREAM_DRAW);
-        glDrawArrays(GL_LINES, 0, 6);
+        glDrawArrays(GL_LINES, 0, 2);
 
     dot.shader.Use();
     dot.drawBatchBegin();
@@ -429,9 +429,7 @@ void renderGUI()
         //static bool mm = true;
         //ImGui::ShowDemoWindow(&mm);
         
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
         ImGui::TextColored(ImVec4(1.0f,1.0f,1.0f,1.0f), "Line 1");
-        ImGui::PopStyleColor();
         // every frame we invalidate the buffer, and submit new to OpenGL
         ImGui::SliderFloat("P0 x", &pVertices[0].x, -0.5f, 0.5f, "%.2f");
         ImGui::SliderFloat("P0 y", &pVertices[0].y, -0.5f, 0.5f, "%.2f");
@@ -443,9 +441,7 @@ void renderGUI()
 
         ImGui::Separator();
 
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.4f, 1.0f));
         ImGui::TextColored(ImVec4(1.0f,1.0f,1.0f,1.0f), "Line 2");
-        ImGui::PopStyleColor();
         // every frame we invalidate the buffer, and submit new to OpenGL
         ImGui::SliderFloat("Q0 x", &qVertices[0].x, -0.5f, 0.5f, "%.2f");
         ImGui::SliderFloat("Q0 y", &qVertices[0].y, -0.5f, 0.5f, "%.2f");
