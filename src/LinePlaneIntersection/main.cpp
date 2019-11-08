@@ -258,19 +258,51 @@ void update(double dt)
 {
 }
 
+/// compute transformation matrix to orient object to look at the input `target` based on the current
+/// position of `pos`. It will clear up rotational and scale elements in input `m` but ignore its
+/// positional elements.
+glm::mat4 computeLookAtForObject(glm::mat4& m, const glm::vec3& pos, const glm::vec3& target)
+{
+    glm::vec3 forward = glm::normalize(target - pos);
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+
+    // handle if forward is nearly the same as up vector
+    // then we choose another direction for forward
+    if (std::abs(forward.x) < kEpsilon && std::abs(forward.z) < kEpsilon)
+    {
+        if (forward.y > 0.0f)
+        {
+            up.x = 0.0f;
+            up.y = 0.0f;
+            up.z = -1.0f;
+        }
+        else
+        {
+            up.x = 0.0f;
+            up.y = 0.0f;
+            up.z = 1.0f;
+        }
+    }
+
+    glm::vec3 left = glm::normalize(glm::cross(up, forward));
+    up = glm::cross(forward, left);
+
+    m[0] = glm::vec4(left, 0.0f);
+    m[1] = glm::vec4(up, 0.0f);
+    m[2] = glm::vec4(forward, 0.0f);
+
+    return m;
+}
+
 // required: 'shader' is active
 void renderPlane_geometry(const Plane& p)
 {
-    float pitch = std::asin(p.normal.y);
-    float yaw = std::asin(p.normal.x / std::cos(pitch));
-
+    // instead of manually rotate the matrix in sequence to orient the object to look into plane's normal
+    // we compute lookAt matrix (similarly to camera's lookAt but direction vector is pointing into target position,
+    // and ignore positional inforation, and rotational matrix is not transpose).
     glm::mat4 model = glm::mat4(1.0f);
-    // use the followin sequence of matrix multiplication
-    //model = glm::translate(model, p.pos0);
-    //model = glm::rotate(model, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-    //model = glm::rotate(model, -pitch, glm::vec3(1.0f, 0.0f, 0.0f));
-    // or use the following in one line
-    model = glm::translate(model, p.pos) * glm::rotate(model, yaw, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::rotate(model, -pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::translate(model, p.pos);
+    model = computeLookAtForObject(model, glm::vec3(0.0f, 0.0f, 0.0f), p.normal);
     glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
     glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.6f, 0.7f);
 
