@@ -92,6 +92,9 @@ void renderPlane_geometry(const Plane& p);
 /// return intersected position
 bool linePlaneIntersect(const Line& l, const Plane& p, glm::vec3& intersectedPos);
 
+/// compute lookAt matrix to orient object to look into `target` position
+glm::mat4 computeLookAtForObject(const glm::vec3& pos, const glm::vec3& target);
+
 ////////////////////////
 /// global variables
 ////////////////////////
@@ -259,9 +262,8 @@ void update(double dt)
 }
 
 /// compute transformation matrix to orient object to look at the input `target` based on the current
-/// position of `pos`. It will clear up rotational and scale elements in input `m` but ignore its
-/// positional elements.
-glm::mat4 computeLookAtForObject(glm::mat4& m, const glm::vec3& pos, const glm::vec3& target)
+/// position of `pos`.
+glm::mat4 computeLookAtForObject(const glm::vec3& pos, const glm::vec3& target)
 {
     glm::vec3 forward = glm::normalize(target - pos);
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -287,10 +289,10 @@ glm::mat4 computeLookAtForObject(glm::mat4& m, const glm::vec3& pos, const glm::
     glm::vec3 left = glm::normalize(glm::cross(up, forward));
     up = glm::cross(forward, left);
 
+    glm::mat4 m = glm::mat4(1.0f);
     m[0] = glm::vec4(left, 0.0f);
     m[1] = glm::vec4(up, 0.0f);
     m[2] = glm::vec4(forward, 0.0f);
-
     return m;
 }
 
@@ -302,7 +304,7 @@ void renderPlane_geometry(const Plane& p)
     // and ignore positional inforation, and rotational matrix is not transpose).
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, p.pos);
-    model = computeLookAtForObject(model, glm::vec3(0.0f, 0.0f, 0.0f), p.normal);
+    model = model * computeLookAtForObject(p.pos, p.pos + p.normal);
     glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
     glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.6f, 0.7f);
 
