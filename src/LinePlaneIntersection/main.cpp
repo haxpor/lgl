@@ -588,7 +588,7 @@ bool linePlaneIntersect(const Line& l, const Plane& p, glm::vec3& intersectedPos
 
     float d = p.getD();
     float denom = (n.x*vdir.x + n.y*vdir.y + n.z*vdir.z);
-    if (std::abs(denom) <= kEpsilon)
+    if (std::abs(denom) < kEpsilon)
         return false;
     float t = -(n.x*v.x + n.y*v.y + n.z*v.z + d) / denom;
     
