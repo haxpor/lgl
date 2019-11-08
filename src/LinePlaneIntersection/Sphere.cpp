@@ -14,8 +14,8 @@ Sphere::Sphere(unsigned int numStacks, unsigned int numSectors, float r):
     radius(r),
     isShaderBuilt(false)
 {
-    assert(numStacks > 3);
-    assert(numSectors > 3);
+    assert(numStacks > 3 && "numStacks must be more than 3 to programmatically generate Sphere vertices");
+    assert(numSectors > 3 && "numSectors must be more than 3 to programmatically generate Sphere vertices");
 }
 
 void Sphere::build()
@@ -67,8 +67,6 @@ void Sphere::destroyGLObjects()
 
 void Sphere::draw() const
 {
-    assert(spec_vao != 0);
-
     glBindVertexArray(spec_vao);
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
@@ -76,7 +74,6 @@ void Sphere::draw() const
 
 void Sphere::drawBatchBegin() const
 {
-    assert(spec_vao != 0);
     glBindVertexArray(spec_vao);
 }
 
@@ -140,8 +137,8 @@ void Sphere::buildVertexSpecifications()
 
 void Sphere::setupVertexBuffers()
 {
-    assert(vertices.size() > 0);
-    assert(indices.size() > 0);
+    assert(vertices.size() > 0 && "vertices.size() must greater than 0. Call buildVertexSpecifications function first.");
+    assert(indices.size() > 0 && "indices.size() must be greater than 0. Make sure buildVertexSpecifications function is called and indices was properly generated");
 
     glGenVertexArrays(1, &spec_vao);
     glBindVertexArray(spec_vao);
