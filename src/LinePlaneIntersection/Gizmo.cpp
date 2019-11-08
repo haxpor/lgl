@@ -135,6 +135,45 @@ void Gizmo::draw()
     glUniformMatrix4fv(shader.GetUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(viewCopy));
 
     glBindVertexArray(vao[0]);
+        // draw box
+        {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.15f));
+        glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniform3f(shader.GetUniformLocation("color"), 0.7f, 0.7f, 0.7f);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+
+    // draw lines
+    glBindVertexArray(vao[1]);
+        // y-axis
+        {
+        glm::mat4 model = glm::mat4(1.0f);
+        glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniform3f(shader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
+        glDrawArrays(GL_LINES, 0, 6);
+        }
+
+        // x-axis
+        {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniform3f(shader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
+        glDrawArrays(GL_LINES, 0, 6);
+        }
+
+        // z-axis
+        {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.0f, 1.0f);
+        glDrawArrays(GL_LINES, 0, 6);
+        }
+
+    // draw boxes at the tips of the lines
+    glBindVertexArray(vao[0]);
         // draw box-dots y-axis
         {
         glm::vec3 dir = glm::vec3(0.0f, gizmoUpLinePoints[4], 0.0f);
@@ -168,45 +207,7 @@ void Gizmo::draw()
         glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
         glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.0f, 0.7f);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-        }   
-    
-        // draw box
-        {
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::scale(model, glm::vec3(0.15f));
-        glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
-        glUniform3f(shader.GetUniformLocation("color"), 0.7f, 0.7f, 0.7f);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-    glBindVertexArray(0);
-
-    // draw lines
-    glBindVertexArray(vao[1]);
-        // y-axis
-        {
-        glm::mat4 model = glm::mat4(1.0f);
-        glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
-        glUniform3f(shader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
-        glDrawArrays(GL_LINES, 0, 6);
-        }
-
-        // x-axis
-        {
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
-        glUniform3f(shader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
-        glDrawArrays(GL_LINES, 0, 6);
-        }
-
-        // z-axis
-        {
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
-        glUniform3f(shader.GetUniformLocation("color"), 0.0f, 0.0f, 1.0f);
-        glDrawArrays(GL_LINES, 0, 6);
-        }
+        }    
     glBindVertexArray(0);
 
     // set opengl setting back to what's before this function call
