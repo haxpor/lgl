@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <limits>
+#include <cstring>
 
 // we need vec3 rotation
 #include "glm/gtx/vector_angle.hpp"
@@ -91,9 +92,17 @@ void renderPlane_geometry(const Plane& p);
 /// find intersection between line-plane
 /// return intersected position
 bool linePlaneIntersect(const Line& l, const Plane& p, glm::vec3& intersectedPos);
+/// finer intersection between line-plane and limit intersection to be within
+/// plane itself.
+bool linePlaneIntersectWithinPlane(const Line& l, const Plane& p, const glm::vec3 planeCorners[4], glm::vec3& intersectedPos);
 
 /// compute lookAt matrix to orient object to look into `target` position
 glm::mat4 computeLookAtForObject(const glm::vec3& pos, const glm::vec3& target);
+
+/// compute plane's 4 corners then return it via `outCorners`
+/// `outCorners` will return 4 positions of plane's corners starting from the top-right, top-left,
+/// bottom-left, then bottom-right.
+void computePlaneCorners(const Plane& p, glm::vec3 outCorners[4]);
 
 ////////////////////////
 /// global variables
@@ -103,6 +112,7 @@ GLuint vao[2];
 GLuint vbo[2];
 lgl::Shader shader;
 Sphere dot(20, 20, 0.03f);
+Sphere planeDot(10,10, 0.007f);
 Gizmo gizmo;
 
 glm::vec3 pVertices[2] = {
@@ -110,8 +120,11 @@ glm::vec3 pVertices[2] = {
     glm::vec3(0.5f, 0.47f, -0.5f)
 };
 glm::vec3 vl_pVertices[4];
+
+#define PLANE_SIZE_FACTOR 0.4f
 Plane plane(glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 glm::vec3 planeNotNecessaryNormalizedNormal = plane.normal;
+glm::vec3 planeCornersVertices[4];
 glm::vec3 xAxis[2] = {
     glm::vec3(0.0f, 1.0f, 0.0f),
     glm::vec3(0.0f, -1.0f, 0.0f)
@@ -122,11 +135,14 @@ glm::vec3 yAxis[6] = {
 };
 
 // plane vertices for geometry way of calculation
+// order defined here is based on GL_TRIANGLE_STRIP
+// in which the previous two vertices after the first triangle defined will be used in the next
+// triangle definition.
 glm::vec3 planeVertices[4] = {
-    glm::vec3(0.5f, 0.5f, 0.0f),
-    glm::vec3(-0.5f, 0.5f, 0.0f),
-    glm::vec3(0.5f, -0.5f, 0.0f),
-    glm::vec3(-0.5f, -0.5f, 0.0f)
+    glm::vec3(1.0f*PLANE_SIZE_FACTOR, 1.0f*PLANE_SIZE_FACTOR, 0.0f),
+    glm::vec3(-1.0f*PLANE_SIZE_FACTOR, 1.0f*PLANE_SIZE_FACTOR, 0.0f),
+    glm::vec3(1.0f*PLANE_SIZE_FACTOR, -1.0f*PLANE_SIZE_FACTOR, 0.0f),
+    glm::vec3(-1.0f*PLANE_SIZE_FACTOR, -1.0f*PLANE_SIZE_FACTOR, 0.0f)
 };
 glm::vec3 planeNormalLineVertices[2];
 
@@ -237,6 +253,15 @@ void initGL()
     glUniformMatrix4fv(dot.shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
     lgl::error::AnyGLError();
 
+    // build up vertex buffers of planeDot (Sphere, smaller with less LOD)
+    planeDot.build();
+    planeDot.shader.Use();
+    glUniformMatrix4fv(planeDot.shader.GetUniformLocation("projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(planeDot.shader.GetUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(view));
+    lgl::error::AnyGLError();
+    glUniformMatrix4fv(planeDot.shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+    lgl::error::AnyGLError();
+    
     // build up gizmo
     gizmo.build();
     gizmo.updateViewMatrix(view);
@@ -294,6 +319,30 @@ glm::mat4 computeLookAtForObject(const glm::vec3& pos, const glm::vec3& target)
     m[1] = glm::vec4(up, 0.0f);
     m[2] = glm::vec4(forward, 0.0f);
     return m;
+}
+
+void computePlaneCorners(const Plane& p, glm::vec3 outCorners[4])
+{
+    // compute rotational matrix for plane to look into its own normal vector
+    // what we need is not the actual matrix, but its 3 column elements inside
+    // each represents left, up, and forward vector that will help us finally solve
+    // finding corner positions
+    glm::mat4 m = computeLookAtForObject(p.pos, p.pos+p.normal);
+
+    // convert from vec4 to vec3
+    glm::vec3 left = glm::vec3(m[0]);
+    glm::vec3 up = glm::vec3(m[1]);
+
+    // size of resultant vector in diagonal direction
+    const float kSize = std::sqrt(PLANE_SIZE_FACTOR * PLANE_SIZE_FACTOR + PLANE_SIZE_FACTOR*PLANE_SIZE_FACTOR);
+    // top-right
+    outCorners[0] = p.pos + glm::normalize(up+left)*kSize;
+    // top-left
+    outCorners[1] = p.pos + glm::normalize(up-left)*kSize;
+    // bottom-left
+    outCorners[2] = p.pos + glm::normalize(-up-left)*kSize;
+    // bottom-right
+    outCorners[3] = p.pos + glm::normalize(-up+left)*kSize;
 }
 
 // required: 'shader' is active
@@ -386,6 +435,11 @@ void render()
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, pVertices, GL_STREAM_DRAW);
         glDrawArrays(GL_LINES, 0, 2);
 
+    // compute plane's corners for both use in
+    // 1. (within) plane intersection
+    // 2. debugging draw for spheres on all plane's corners
+    computePlaneCorners(plane, planeCornersVertices);
+
     dot.shader.Use();
     dot.drawBatchBegin();
         // line p - tipping point 0
@@ -403,7 +457,7 @@ void render()
         dot.drawBatchDraw();
 
         // intersected point
-        if (linePlaneIntersect(Line(pVertices[0], pVertices[1]), plane, tmpIntersectedPos))
+        if (linePlaneIntersectWithinPlane(Line(pVertices[0], pVertices[1]), plane, planeCornersVertices, tmpIntersectedPos))
         {
             dotVertex = tmpIntersectedPos;
             glUniform3f(dot.shader.GetUniformLocation("color"), 0.0f, 0.0f, 0.0f);
@@ -412,6 +466,34 @@ void render()
             dot.drawBatchDraw();
         }
     dot.drawBatchEnd();
+
+    planeDot.shader.Use();
+    planeDot.drawBatchBegin();
+        // top-right plane-corner
+        dotVertex = planeCornersVertices[0];
+        glUniform3f(planeDot.shader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
+        glUniformMatrix4fv(planeDot.shader.GetUniformLocation("model"), 1, GL_FALSE, 
+                glm::value_ptr(glm::translate(glm::mat4(1.0f), dotVertex)));
+        planeDot.drawBatchDraw();
+
+        dotVertex = planeCornersVertices[1];
+        glUniform3f(planeDot.shader.GetUniformLocation("color"), 0.0f, 1.0f, 0.0f);
+        glUniformMatrix4fv(planeDot.shader.GetUniformLocation("model"), 1, GL_FALSE, 
+                glm::value_ptr(glm::translate(glm::mat4(1.0f), dotVertex)));
+        planeDot.drawBatchDraw();
+
+        dotVertex = planeCornersVertices[2];
+        glUniform3f(planeDot.shader.GetUniformLocation("color"), 0.0f, 0.0f, 1.0f);
+        glUniformMatrix4fv(planeDot.shader.GetUniformLocation("model"), 1, GL_FALSE, 
+                glm::value_ptr(glm::translate(glm::mat4(1.0f), dotVertex)));
+        planeDot.drawBatchDraw();
+
+        dotVertex = planeCornersVertices[3];
+        glUniform3f(planeDot.shader.GetUniformLocation("color"), 0.0f, 1.0f, 1.0f);
+        glUniformMatrix4fv(planeDot.shader.GetUniformLocation("model"), 1, GL_FALSE, 
+                glm::value_ptr(glm::translate(glm::mat4(1.0f), dotVertex)));
+        planeDot.drawBatchDraw();
+    planeDot.drawBatchEnd();
 }
 
 void renderGizmo()
@@ -525,6 +607,9 @@ void mouseCB(GLFWwindow* window, double x, double y)
         dot.shader.Use();
         glUniformMatrix4fv(dot.shader.GetUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(view));
 
+        planeDot.shader.Use();
+        glUniformMatrix4fv(planeDot.shader.GetUniformLocation("view"), 1, GL_FALSE, glm::value_ptr(view));
+
         gizmo.updateViewMatrix(view);
     }
 }
@@ -545,6 +630,9 @@ void mouseScrollCB(GLFWwindow* window, double dx, double dy)
         glUniformMatrix4fv(shader.GetUniformLocation("projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
         dot.shader.Use();
+        glUniformMatrix4fv(shader.GetUniformLocation("projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+        planeDot.shader.Use();
         glUniformMatrix4fv(shader.GetUniformLocation("projection"), 1, GL_FALSE, glm::value_ptr(projection));
     }
 }
@@ -580,6 +668,7 @@ void destroyMem()
     glDeleteBuffers(2, vbo);
     shader.Destroy();
     dot.destroyGLObjects();
+    planeDot.destroyGLObjects();
 }
 
 bool linePlaneIntersect(const Line& l, const Plane& p, glm::vec3& intersectedPos)
@@ -596,10 +685,61 @@ bool linePlaneIntersect(const Line& l, const Plane& p, glm::vec3& intersectedPos
     
     // (optional) check segment, only intersection can happen within the defined segment of the line
     // and within the plane itself (t = 0) (not extended unlimited)
-    if (t <= 0.0f || t > 1.0f)
+    if (t < 0.0f || t > 1.0f)
         return false;
 
     intersectedPos = v + vdir*t;
+    return true;
+}
+
+bool linePlaneIntersectWithinPlane(const Line& l, const Plane& p, const glm::vec3 planeCorners[4], glm::vec3& intersectedPos)
+{
+    glm::vec3 n = p.normal;
+    glm::vec3 v = l.pos;
+    glm::vec3 vdir = l.dir;
+
+    float d = p.getD();
+    float denom = (n.x*vdir.x + n.y*vdir.y + n.z*vdir.z);
+    if (std::abs(denom) < kEpsilon)
+        return false;
+    float t = -(n.x*v.x + n.y*v.y + n.z*v.z + d) / denom;
+    
+    // (optional) check segment, only intersection can happen within the defined segment of the line
+    // and within the plane itself (t = 0) (not extended unlimited)
+    if (t < 0.0f || t > 1.0f)
+        return false;
+
+    glm::vec3 chkIntersectedPos = v + vdir*t;
+
+    // check if intersected position is within plane using Heron's Formulae
+    // so the edges forming from the points starting at top-right, then goes counter-clockwise
+    float a1 = glm::distance(planeCorners[0], planeCorners[1]);
+    float a2 = glm::distance(planeCorners[1], planeCorners[2]);
+    float a3 = glm::distance(planeCorners[2], planeCorners[3]);
+    float a4 = glm::distance(planeCorners[3], planeCorners[0]);
+
+    float A = a1*a2;
+
+    float b1 = glm::distance(chkIntersectedPos, planeCorners[0]);
+    float b2 = glm::distance(chkIntersectedPos, planeCorners[1]);
+    float b3 = glm::distance(chkIntersectedPos, planeCorners[2]);
+    float b4 = glm::distance(chkIntersectedPos, planeCorners[3]);
+
+    float u1 = (b1 + b2 + a1) / 2.0f;
+    float u2 = (b2 + b3 + a2) / 2.0f;
+    float u3 = (b3 + b4 + a3) / 2.0f;
+    float u4 = (b1 + b4 + a4) / 2.0f;
+
+    float A1 = std::sqrt(u1 * (u1 - a1) * (u1 - b1) * (u1 - b2));
+    float A2 = std::sqrt(u2 * (u2 - a2) * (u2 - b2) * (u2 - b3));
+    float A3 = std::sqrt(u3 * (u3 - a3) * (u3 - b3) * (u3 - b4));
+    float A4 = std::sqrt(u4 * (u4 - a4) * (u4 - b1) * (u4 - b4));
+
+    if (std::abs(A - (A1 + A2 + A3 + A4)) >= 0.001f)
+        return false;
+
+    intersectedPos = chkIntersectedPos;
+
     return true;
 }
 
