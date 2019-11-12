@@ -524,36 +524,37 @@ void renderGUI()
 
         // plane 1 normal
         ImGui::TextColored(ImVec4(0.0f, 0.8f, 1.0f, 1.0f), "Plane 1");
-        if (ImGui::SliderFloat("1-Norm x", &plane1NotNeccessaryNormalized.x, -1.0f, 1.0f, "%.2f"))
+        if (ImGui::SliderFloat("Norm x##1", &plane1NotNeccessaryNormalized.x, -1.0f, 1.0f, "%.2f"))
             plane1.normal = glm::normalize(plane1NotNeccessaryNormalized);
-        if (ImGui::SliderFloat("1-Norm y", &plane1NotNeccessaryNormalized.y, -1.0f, 1.0f, "%.2f"))
+        if (ImGui::SliderFloat("Norm y##2", &plane1NotNeccessaryNormalized.y, -1.0f, 1.0f, "%.2f"))
             plane1.normal = glm::normalize(plane1NotNeccessaryNormalized);
-        if (ImGui::SliderFloat("1-Norm z", &plane1NotNeccessaryNormalized.z, -1.0f, 1.0f, "%.2f"))
+        if (ImGui::SliderFloat("Norm z##3", &plane1NotNeccessaryNormalized.z, -1.0f, 1.0f, "%.2f"))
             plane1.normal = glm::normalize(plane1NotNeccessaryNormalized);
 
         ImGui::Separator();
 
         // plane 2 normal
         ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f), "Plane 2");
-        if (ImGui::SliderFloat("2-Norm x", &plane2NotNeccessaryNormalized.x, -1.0f, 1.0f, "%.2f"))
+        if (ImGui::SliderFloat("Norm x##4", &plane2NotNeccessaryNormalized.x, -1.0f, 1.0f, "%.2f"))
             plane2.normal = glm::normalize(plane2NotNeccessaryNormalized);
-        if (ImGui::SliderFloat("2-Norm y", &plane2NotNeccessaryNormalized.y, -1.0f, 1.0f, "%.2f"))
+        if (ImGui::SliderFloat("Norm y##5", &plane2NotNeccessaryNormalized.y, -1.0f, 1.0f, "%.2f"))
             plane2.normal = glm::normalize(plane2NotNeccessaryNormalized);
-        if (ImGui::SliderFloat("2-Norm z", &plane2NotNeccessaryNormalized.z, -1.0f, 1.0f, "%.2f"))
+        if (ImGui::SliderFloat("Norm z##6", &plane2NotNeccessaryNormalized.z, -1.0f, 1.0f, "%.2f"))
             plane2.normal = glm::normalize(plane2NotNeccessaryNormalized);
 
         ImGui::Separator();
 
         // plane 3 normal
         ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), "Plane 3");
-        if (ImGui::SliderFloat("3-Norm x", &plane3NotNeccessaryNormalized.x, -1.0f, 1.0f, "%.2f"))
+        if (ImGui::SliderFloat("Norm x##7", &plane3NotNeccessaryNormalized.x, -1.0f, 1.0f, "%.2f"))
             plane3.normal = glm::normalize(plane3NotNeccessaryNormalized);
-        if (ImGui::SliderFloat("3-Norm y", &plane3NotNeccessaryNormalized.y, -1.0f, 1.0f, "%.2f"))
+        if (ImGui::SliderFloat("Norm y##8", &plane3NotNeccessaryNormalized.y, -1.0f, 1.0f, "%.2f"))
             plane3.normal = glm::normalize(plane3NotNeccessaryNormalized);
-        if (ImGui::SliderFloat("3-Norm z", &plane3NotNeccessaryNormalized.z, -1.0f, 1.0f, "%.2f"))
+        if (ImGui::SliderFloat("Norm z##9", &plane3NotNeccessaryNormalized.z, -1.0f, 1.0f, "%.2f"))
             plane3.normal = glm::normalize(plane3NotNeccessaryNormalized);
 
         // wireframe mode
+        // TODO: migrate to use shader to draw wireframe instead of using fixed-function ... 
         ImGui::Checkbox("Wireframe mode", &wireframeMode);
             
     ImGui::End();
