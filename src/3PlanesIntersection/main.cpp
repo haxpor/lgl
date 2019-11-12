@@ -60,6 +60,17 @@ enum PlaneID
     PLANE3
 };
 
+/// implementation type of 3-planes (specifically) intersection
+enum PlaneIntersectionImpl
+{
+    // cramer's rule with no simplified equation
+    // multiple computation of determinant. Use Laplace expansion with the determinant of matrix.
+    CRAMER_RULE_NOSIMPLIFIED,
+
+    // based on cramer's rules, but simplified into matrix form
+    SIMPLIFIED_MATRIX_FORM
+};
+
 int screenWidth = 800;
 int screenHeight = 600;
 GLFWwindow* window = nullptr;
@@ -112,8 +123,8 @@ void renderPlane_geometry(const Plane& p, const glm::vec3& color, const glm::vec
 bool threePlaneIntersect(const Plane& p1, const Plane& p2, const Plane& p3, glm::vec3& intersectedPos);
 
 /// simplified implementation version of threePlaneIntersect() with only 1 time computation of
-/// determinant.
-bool threePlaneIntersectSimplified(const Plane& p1, const Plane& p2, const Plane& p3, glm::vec3& intersectedPos);
+/// determinant using determinant approach to define each element in main matrix.
+bool threePlaneIntersectSimplified_matrixForm(const Plane& p1, const Plane& p2, const Plane& p3, glm::vec3& intersectedPos);
 
 /// compute lookAt matrix to orient object to look into `target` position
 glm::mat4 computeLookAtForObject(const glm::vec3& pos, const glm::vec3& target);
@@ -181,6 +192,7 @@ float camYaw = 0.0f, camPitch = 0.0f;   // compared to CameraImgui, camYaw here 
 float camFov = 45.0f;
 bool isLeftMousePressed = false;
 bool wireframeMode = false;
+PlaneIntersectionImpl planeIntersectImpl = PlaneIntersectionImpl::CRAMER_RULE_NOSIMPLIFIED;
 
 ////////////////////////
 // implementations
@@ -482,8 +494,18 @@ void render()
     computePlaneCorners(plane2, plane2CornersVertices);
     computePlaneCorners(plane3, plane3CornersVertices);
 
-    // intersected point
-    if (threePlaneIntersect(plane1, plane2, plane3, tmpIntersectedPos))
+    // intersected point based on implementation user chose
+    bool isIntersected = false;
+    switch (planeIntersectImpl)
+    {
+        case PlaneIntersectionImpl::CRAMER_RULE_NOSIMPLIFIED:
+            isIntersected = threePlaneIntersect(plane1, plane2, plane3, tmpIntersectedPos);
+            break;
+        case PlaneIntersectionImpl::SIMPLIFIED_MATRIX_FORM:
+            isIntersected = threePlaneIntersectSimplified_matrixForm(plane1, plane2, plane3, tmpIntersectedPos);
+            break;
+    }
+    if (isIntersected)
     {
         dot.shader.Use();
         dotVertex = tmpIntersectedPos;
@@ -513,7 +535,7 @@ void renderGUI()
     ImGui::NewFrame();
 
 #define IMGUI_WINDOW_WIDTH 210
-#define IMGUI_WINDOW_HEIGHT 320
+#define IMGUI_WINDOW_HEIGHT 370
 #define IMGUI_WINDOW_MARGIN 5
     ImGui::SetNextWindowSize(ImVec2(IMGUI_WINDOW_WIDTH, IMGUI_WINDOW_HEIGHT));
     ImGui::SetNextWindowSizeConstraints(ImVec2(IMGUI_WINDOW_WIDTH, IMGUI_WINDOW_HEIGHT), ImVec2(IMGUI_WINDOW_WIDTH,IMGUI_WINDOW_HEIGHT));
@@ -553,9 +575,21 @@ void renderGUI()
         if (ImGui::SliderFloat("Norm z##9", &plane3NotNeccessaryNormalized.z, -1.0f, 1.0f, "%.2f"))
             plane3.normal = glm::normalize(plane3NotNeccessaryNormalized);
 
+        ImGui::Separator();
+
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Misc");
+
         // wireframe mode
         // TODO: migrate to use shader to draw wireframe instead of using fixed-function ... 
         ImGui::Checkbox("Wireframe mode", &wireframeMode);
+
+        // select the implementation used in 3-plane intersections
+        int intCastedPlaneIntersectedImpl = static_cast<int>(planeIntersectImpl);
+        if (ImGui::Combo("Impl", &intCastedPlaneIntersectedImpl, "Un-simplified Cramer's Rules\0Simplified matrix form\0"))
+        {
+            // keep updating the value
+            planeIntersectImpl = static_cast<PlaneIntersectionImpl>(intCastedPlaneIntersectedImpl);
+        }
             
     ImGui::End();
     
@@ -727,9 +761,31 @@ bool threePlaneIntersect(const Plane& p1, const Plane& p2, const Plane& p3, glm:
     return true;
 }
 
-bool threePlaneIntersectSimplified(const Plane& p1, const Plane& p2, const Plane& p3, glm::vec3& intersectedPos)
+bool threePlaneIntersectSimplified_matrixForm(const Plane& p1, const Plane& p2, const Plane& p3, glm::vec3& intersectedPos)
 {
-    return false;
+    // define raw matrix elements in column-wise order to satisfy glm
+    float rawMatrix[9] = {
+        p1.normal.x, p2.normal.x, p3.normal.x,
+        p1.normal.y, p2.normal.y, p3.normal.y,
+        p1.normal.z, p2.normal.z, p3.normal.z
+    };
+    float detA = glm::determinant(glm::make_mat3(rawMatrix));
+
+    if (std::abs(detA) < kEpsilon)
+        return false;
+    
+    glm::vec3 a = p1.normal;
+    glm::vec3 b = p2.normal;
+    glm::vec3 c = p3.normal;
+
+    // note: use mat's constructor to directly define matrix from all individual elements
+    // defined element order is in row-based specifically for this case!
+    intersectedPos = glm::mat3(b.y*c.z - b.z*c.y, b.z*c.x - b.x*c.z, b.x*c.y - b.y*c.x,
+                               a.z*c.y - a.y*c.z, a.x*c.z - a.z*c.x, a.y*c.x - a.x*c.y,
+                               a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x)
+                    * glm::vec3(-p1.getD(), -p2.getD(), -p3.getD()) / detA;
+
+    return true;
 }
 
 int main(int argc, char** argv)
