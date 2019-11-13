@@ -6,7 +6,8 @@
  * any combination of transformation on it).
  *
  * Use a plane as a target object in the scene.
- * A yellow line drew represent up vector for such object at any time.
+ * A yellow line drew representing up vector for such object at any time.
+ * A red line drew presenting left vector for such object at any time (extra to add).
  *
  * This example code is based on 2PlanesIntersection with modifed and works up on it.
  *
@@ -149,6 +150,7 @@ glm::vec3 planeVertices[4] = {
 };
 glm::vec3 planeNormalLineVertices[2];
 glm::vec3 planeUpLineVertices[2];
+glm::vec3 planeLeftLineVertices[2];
 
 glm::vec3 dotVertex;
 
@@ -372,6 +374,7 @@ void renderPlane_geometry(const Plane& p, const glm::vec3& color, const glm::vec
     // (reset matrix back to normal)
     glUniformMatrix4fv(shader.GetUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
 
+    glDepthFunc(GL_ALWAYS);
     // 2. render plane normal
     planeNormalLineVertices[0] = p.pos;
     planeNormalLineVertices[1] = p.pos + 0.5f*p.normal;
@@ -383,13 +386,26 @@ void renderPlane_geometry(const Plane& p, const glm::vec3& color, const glm::vec
     // 3. render plane's up vector
     // get up vector from 2nd column vector of lookAt matrix as we constructed it from above
     glm::vec3 lineDir = lookAt[1];
-    // use plane's position as the beginning point then extend into both ends positively, and negatively
-    planeUpLineVertices[0] = p.pos + lineDir;
-    planeUpLineVertices[1] = p.pos - lineDir;
+    // use plane's position as the beginning point then extend into lineDir direction 
+    planeUpLineVertices[0] = p.pos + lineDir*PLANE_SIZE_FACTOR*1.3f;
+    planeUpLineVertices[1] = p.pos;
     glUniform3f(shader.GetUniformLocation("color"), 1.0f, 1.0f, 0.0f);
     glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, nullptr, GL_STREAM_DRAW);
     glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, planeUpLineVertices, GL_STREAM_DRAW);
     glDrawArrays(GL_LINES, 0, 2);
+
+    // 4. (extra) render plane's left vector
+    // get left vector from 1st column vector of lookAt matrix as we constructed it from above
+    lineDir = lookAt[0];
+    // use plane's position as the beginning point then extend into lineDir direction
+    planeLeftLineVertices[0] = p.pos + lineDir*PLANE_SIZE_FACTOR*1.3f;
+    planeLeftLineVertices[1] = p.pos;
+    glUniform3f(shader.GetUniformLocation("color"), 1.0f, 0.0f, 0.0f);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, planeLeftLineVertices, GL_STREAM_DRAW);
+    glDrawArrays(GL_LINES, 0, 2);
+
+    glDepthFunc(GL_LESS);
 }
 
 // required: dotShader needs to already began
