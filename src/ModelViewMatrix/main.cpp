@@ -16,7 +16,8 @@
  */
 
 #include <iostream>
-#include "lgl/lgl.h"
+#include "glm/glm.hpp"
+#include "glm/gtx/string_cast.hpp"      // for glm::to_string
 
 int main()
 {
