@@ -122,7 +122,7 @@ Sphere planeDot(10,10, 0.007f);
 Gizmo gizmo;
 
 #define PLANE_SIZE_FACTOR 0.4f
-Plane plane1(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+Plane plane1(glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 // to hold modified planes' normal and not immediate affect ImGui's UI
 glm::vec3 plane1NotNeccessaryNormalized = plane1.normal;
@@ -385,7 +385,8 @@ void renderPlane_geometry(const Plane& p, const glm::vec3& color, const glm::vec
 
     // 3. render plane's up vector
     // get up vector from 2nd column vector of lookAt matrix as we constructed it from above
-    glm::vec3 lineDir = lookAt[1];
+    // note: use `model` matrix here to validate that using resultant matrix from multiple operations works
+    glm::vec3 lineDir = model[1];
     // use plane's position as the beginning point then extend into lineDir direction 
     planeUpLineVertices[0] = p.pos + lineDir*PLANE_SIZE_FACTOR*1.3f;
     planeUpLineVertices[1] = p.pos;
@@ -396,7 +397,7 @@ void renderPlane_geometry(const Plane& p, const glm::vec3& color, const glm::vec
 
     // 4. (extra) render plane's left vector
     // get left vector from 1st column vector of lookAt matrix as we constructed it from above
-    lineDir = lookAt[0];
+    lineDir = model[0];
     // use plane's position as the beginning point then extend into lineDir direction
     planeLeftLineVertices[0] = p.pos + lineDir*PLANE_SIZE_FACTOR*1.3f;
     planeLeftLineVertices[1] = p.pos;
