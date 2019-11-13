@@ -1,4 +1,4 @@
-EXE = up-vector-from-matrix.out
+EXE = decompose-dir-vecs-from-world-matrix.out
 
 SOURCES = main.cpp
 SOURCES += Sphere.cpp Gizmo.cpp
