@@ -10,30 +10,38 @@
  */
 
 #include <iostream>
+#include <limits>
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
 
+constexpr const float kEpsilon = std::numeric_limits<float>::epsilon();
+
+bool epsilonEqual(float a, float b, float epsilon)
+{
+    return std::abs(a - b) <= epsilon;
+}
+
 void assertMatrixEqual(const glm::mat4& a, const glm::mat4& b)
 {
-    assert(a[0][0] == b[0][0] && "Two matrices must be equal");
-    assert(a[0][1] == b[0][1] && "Two matrices must be equal");
-    assert(a[0][2] == b[0][2] && "Two matrices must be equal");
-    assert(a[0][3] == b[0][3] && "Two matrices must be equal");
+    assert(epsilonEqual(a[0][0], b[0][0], kEpsilon) && "Two matrices must be equal");
+    assert(epsilonEqual(a[0][1], b[0][1], kEpsilon) && "Two matrices must be equal");
+    assert(epsilonEqual(a[0][2], b[0][2], kEpsilon) && "Two matrices must be equal");
+    assert(epsilonEqual(a[0][3], b[0][3], kEpsilon) && "Two matrices must be equal");
     
-    assert(a[1][0] == b[1][0] && "Two matrices must be equal");
-    assert(a[1][1] == b[1][1] && "Two matrices must be equal");
-    assert(a[1][2] == b[1][2] && "Two matrices must be equal");
-    assert(a[1][3] == b[1][3] && "Two matrices must be equal");
+    assert(epsilonEqual(a[1][0], b[1][0], kEpsilon) && "Two matrices must be equal");
+    assert(epsilonEqual(a[1][1], b[1][1], kEpsilon) && "Two matrices must be equal");
+    assert(epsilonEqual(a[1][2], b[1][2], kEpsilon) && "Two matrices must be equal");
+    assert(epsilonEqual(a[1][3], b[1][3], kEpsilon) && "Two matrices must be equal");
 
-    assert(a[2][0] == b[2][0] && "Two matrices must be equal");
-    assert(a[2][1] == b[2][1] && "Two matrices must be equal");
-    assert(a[2][2] == b[2][2] && "Two matrices must be equal");
-    assert(a[2][3] == b[2][3] && "Two matrices must be equal");
+    assert(epsilonEqual(a[2][0], b[2][0], kEpsilon) && "Two matrices must be equal");
+    assert(epsilonEqual(a[2][1], b[2][1], kEpsilon) && "Two matrices must be equal");
+    assert(epsilonEqual(a[2][2], b[2][2], kEpsilon) && "Two matrices must be equal");
+    assert(epsilonEqual(a[2][3], b[2][3], kEpsilon) && "Two matrices must be equal");
 
-    assert(a[3][0] == b[3][0] && "Two matrices must be equal");
-    assert(a[3][1] == b[3][1] && "Two matrices must be equal");
-    assert(a[3][2] == b[3][2] && "Two matrices must be equal");
-    assert(a[3][3] == b[3][3] && "Two matrices must be equal");
+    assert(epsilonEqual(a[3][0], b[3][0], kEpsilon) && "Two matrices must be equal");
+    assert(epsilonEqual(a[3][1], b[3][1], kEpsilon) && "Two matrices must be equal");
+    assert(epsilonEqual(a[3][2], b[3][2], kEpsilon) && "Two matrices must be equal");
+    assert(epsilonEqual(a[3][3], b[3][3], kEpsilon) && "Two matrices must be equal");
 }
 
 int main()
