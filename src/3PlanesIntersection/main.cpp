@@ -138,8 +138,8 @@ void computePlaneCorners(const Plane& p, glm::vec3 outCorners[4]);
 /// global variables
 ////////////////////////
 glm::mat4 view, projection;
-GLuint vao[2];
-GLuint vbo[2];
+GLuint sharedVAO;       // shared vao for both drawing lines and planes
+GLuint sharedVBO;       // shared vbo for both drawing lines and planes
 lgl::Shader shader;
 Sphere dot(20, 20, 0.03f);
 Sphere planeDot(10,10, 0.007f);
@@ -244,26 +244,20 @@ void initGL()
     glEnable(GL_DEPTH_TEST);
 
     // create buffer objects
-    glGenVertexArrays(2, vao);
-    glGenBuffers(2, vbo);
+    glGenVertexArrays(1, &sharedVAO);
+    glGenBuffers(1, &sharedVBO);
 
     // prepare for line vao
-    glBindVertexArray(vao[0]);
+    glBindVertexArray(sharedVAO);
         // a single VBO shares both vertices from both p and q lines to render on screen
         // although having dedicated VBO for each line should be higher performance, but this is also
         // another testbed setup for this program
         //
         // so we supply 'data` parameter as nullptr and we will do buffer update in render loop
-        glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+        //
+        // also shared for plane drawing
+        glBindBuffer(GL_ARRAY_BUFFER, sharedVBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, nullptr, GL_STREAM_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), nullptr);
-        glEnableVertexAttribArray(0);
-    glBindVertexArray(0);
-
-    // prepare for plane vao
-    glBindVertexArray(vao[1]);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 4, nullptr, GL_DYNAMIC_DRAW);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), nullptr);
         glEnableVertexAttribArray(0);
     glBindVertexArray(0);
@@ -468,8 +462,8 @@ void render()
     
     shader.Use();
 
-    glBindVertexArray(vao[0]);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    glBindVertexArray(sharedVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, sharedVBO);
         // plane
         renderPlane_geometry(plane1, glm::vec3(0.0f, 0.6f, 0.7f), glm::vec3(0.0f, 0.8f, 1.0f));
         renderPlane_geometry(plane2, glm::vec3(0.7f, 0.2f, 0.2f), glm::vec3(1.0f, 0.5f, 0.5f));
@@ -487,40 +481,40 @@ void render()
         glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 2, yAxis, GL_STREAM_DRAW);
         glDrawArrays(GL_LINES, 0, 2);
 
-    // compute plane's corners for both use in
-    // 1. (within) plane intersection
-    // 2. debugging draw for spheres on all plane's corners
-    computePlaneCorners(plane1, plane1CornersVertices);
-    computePlaneCorners(plane2, plane2CornersVertices);
-    computePlaneCorners(plane3, plane3CornersVertices);
+        // compute plane's corners for both use in
+        // 1. (within) plane intersection
+        // 2. debugging draw for spheres on all plane's corners
+        computePlaneCorners(plane1, plane1CornersVertices);
+        computePlaneCorners(plane2, plane2CornersVertices);
+        computePlaneCorners(plane3, plane3CornersVertices);
 
-    // intersected point based on implementation user chose
-    bool isIntersected = false;
-    switch (planeIntersectImpl)
-    {
-        case PlaneIntersectionImpl::CRAMER_RULE_NOSIMPLIFIED:
-            isIntersected = threePlaneIntersect(plane1, plane2, plane3, tmpIntersectedPos);
-            break;
-        case PlaneIntersectionImpl::SIMPLIFIED_MATRIX_FORM:
-            isIntersected = threePlaneIntersectSimplified_matrixForm(plane1, plane2, plane3, tmpIntersectedPos);
-            break;
-    }
-    if (isIntersected)
-    {
-        dot.shader.Use();
-        dotVertex = tmpIntersectedPos;
-        glUniform3f(dot.shader.GetUniformLocation("color"), 0.0f, 0.0f, 0.0f);
-        glUniformMatrix4fv(dot.shader.GetUniformLocation("model"), 1, GL_FALSE,
-                glm::value_ptr(glm::translate(glm::mat4(1.0f), dotVertex)));
-        dot.draw();
-    }
+        // intersected point based on implementation user chose
+        bool isIntersected = false;
+        switch (planeIntersectImpl)
+        {
+            case PlaneIntersectionImpl::CRAMER_RULE_NOSIMPLIFIED:
+                isIntersected = threePlaneIntersect(plane1, plane2, plane3, tmpIntersectedPos);
+                break;
+            case PlaneIntersectionImpl::SIMPLIFIED_MATRIX_FORM:
+                isIntersected = threePlaneIntersectSimplified_matrixForm(plane1, plane2, plane3, tmpIntersectedPos);
+                break;
+        }
+        if (isIntersected)
+        {
+            dot.shader.Use();
+            dotVertex = tmpIntersectedPos;
+            glUniform3f(dot.shader.GetUniformLocation("color"), 0.0f, 0.0f, 0.0f);
+            glUniformMatrix4fv(dot.shader.GetUniformLocation("model"), 1, GL_FALSE,
+                    glm::value_ptr(glm::translate(glm::mat4(1.0f), dotVertex)));
+            dot.draw();
+        }
 
-    planeDot.shader.Use();
-    planeDot.drawBatchBegin();
-        drawDotAtPlaneCorners(PlaneID::PLANE1);
-        drawDotAtPlaneCorners(PlaneID::PLANE2);
-        drawDotAtPlaneCorners(PlaneID::PLANE3);
-    planeDot.drawBatchEnd();
+        planeDot.shader.Use();
+        planeDot.drawBatchBegin();
+            drawDotAtPlaneCorners(PlaneID::PLANE1);
+            drawDotAtPlaneCorners(PlaneID::PLANE2);
+            drawDotAtPlaneCorners(PlaneID::PLANE3);
+        planeDot.drawBatchEnd();
 }
 
 void renderGizmo()
@@ -712,8 +706,8 @@ void initMem()
 
 void destroyMem()
 {
-    glDeleteBuffers(2, vao);
-    glDeleteBuffers(2, vbo);
+    glDeleteBuffers(1, &sharedVAO);
+    glDeleteBuffers(1, &sharedVBO);
     shader.Destroy();
     dot.destroyGLObjects();
     planeDot.destroyGLObjects();
