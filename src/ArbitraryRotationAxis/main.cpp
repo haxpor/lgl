@@ -420,7 +420,7 @@ void render()
         // rotate in sequence in order of XYZ (rotation around z happens first)
         glm::mat3 orientation = rotateAroundAxis(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-planeRotXYZ.x)) *
             rotateAroundAxis(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-planeRotXYZ.y)) *
-            rotateAroundAxis(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(planeRotXYZ.z));
+            rotateAroundAxis(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(-planeRotXYZ.z));
         renderPlane_geometry(plane1, orientation, glm::vec3(0.0f, 0.6f, 0.7f), glm::vec3(0.0f, 0.8f, 1.0f));
 
         // x-axis
