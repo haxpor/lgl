@@ -291,6 +291,7 @@ void computePlaneCorners(const Plane& p, const glm::mat3& orientation, glm::vec3
 
 /// create a rotational matrix to rotate around the input `axis` for `angle`.
 /// it creates a new mat3.
+/// `axis` needs to be normalized
 glm::mat3 rotateAroundAxis(const glm::vec3& axis, float angle)
 {
     float nx_squared = axis.x * axis.x;
