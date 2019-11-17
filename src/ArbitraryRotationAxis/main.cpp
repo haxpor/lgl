@@ -111,7 +111,7 @@ Gizmo gizmo;
 #define PLANE_SIZE_FACTOR 0.4f
 Plane plane1(glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-glm::vec3 planeRotZYX = glm::vec3(0.0f);
+glm::vec3 planeRotXYZ = glm::vec3(0.0f);
 // to hold planes' corners for drawing 4 dots
 glm::vec3 plane1CornersVertices[4];
 
@@ -417,10 +417,10 @@ void render()
         glBindBuffer(GL_ARRAY_BUFFER, sharedVBO);
         // plane
         // compute rotation transformation matrix for plane
-        // rotate in sequence in order of ZYX (z first)
-        glm::mat3 orientation = rotateAroundAxis(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-planeRotZYX.x)) *
-            rotateAroundAxis(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-planeRotZYX.y)) *
-            rotateAroundAxis(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(planeRotZYX.z));
+        // rotate in sequence in order of XYZ (rotation around z happens first)
+        glm::mat3 orientation = rotateAroundAxis(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-planeRotXYZ.x)) *
+            rotateAroundAxis(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-planeRotXYZ.y)) *
+            rotateAroundAxis(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(planeRotXYZ.z));
         renderPlane_geometry(plane1, orientation, glm::vec3(0.0f, 0.6f, 0.7f), glm::vec3(0.0f, 0.8f, 1.0f));
 
         // x-axis
@@ -463,7 +463,7 @@ void renderGUI()
     ImGui::SetNextWindowSize(ImVec2(IMGUI_WINDOW_WIDTH, IMGUI_WINDOW_HEIGHT));
     ImGui::SetNextWindowSizeConstraints(ImVec2(IMGUI_WINDOW_WIDTH, IMGUI_WINDOW_HEIGHT), ImVec2(IMGUI_WINDOW_WIDTH,IMGUI_WINDOW_HEIGHT));
     //ImGui::SetNextWindowPos(ImVec2(screenWidth - IMGUI_WINDOW_WIDTH - IMGUI_WINDOW_MARGIN, IMGUI_WINDOW_MARGIN));
-    ImGui::Begin("Z->Y->X Rot Order");
+    ImGui::Begin("XYZ Rotation");
         //static bool mm = true;
         //ImGui::ShowDemoWindow(&mm);
 
@@ -471,27 +471,27 @@ void renderGUI()
 
         // plane transformation
         ImGui::TextColored(ImVec4(0.0f, 0.8f, 1.0f, 1.0f), "Plane Rot (in degrees)");
-        if (ImGui::DragScalar("Z", ImGuiDataType_Float, &planeRotZYX.z, 1.0f, &f32_zero, &f32_360, "%f", 1.0f))
+        if (ImGui::DragScalar("Z", ImGuiDataType_Float, &planeRotXYZ.z, 1.0f, &f32_zero, &f32_360, "%f", 1.0f))
         {
             // bound value entered from user
-            if (planeRotZYX.z < f32_zero)
-                planeRotZYX.z = f32_zero;
-            else if (planeRotZYX.z > f32_360)
-                planeRotZYX.z = f32_360;
+            if (planeRotXYZ.z < f32_zero)
+                planeRotXYZ.z = f32_zero;
+            else if (planeRotXYZ.z > f32_360)
+                planeRotXYZ.z = f32_360;
         }
-        if (ImGui::DragScalar("Y", ImGuiDataType_Float, &planeRotZYX.y, 1.0f, &f32_neg_180, &f32_pos_180, "%f", 1.0f))
+        if (ImGui::DragScalar("Y", ImGuiDataType_Float, &planeRotXYZ.y, 1.0f, &f32_neg_180, &f32_pos_180, "%f", 1.0f))
         {
-            if (planeRotZYX.y < f32_neg_180)
-                planeRotZYX.y = f32_neg_180;
-            else if (planeRotZYX.y > f32_pos_180)
-                planeRotZYX.y = f32_pos_180;
+            if (planeRotXYZ.y < f32_neg_180)
+                planeRotXYZ.y = f32_neg_180;
+            else if (planeRotXYZ.y > f32_pos_180)
+                planeRotXYZ.y = f32_pos_180;
         }
-        if (ImGui::DragScalar("X", ImGuiDataType_Float, &planeRotZYX.x, 1.0f, &f32_neg_90, &f32_pos_90, "%f", 1.0f))
+        if (ImGui::DragScalar("X", ImGuiDataType_Float, &planeRotXYZ.x, 1.0f, &f32_neg_90, &f32_pos_90, "%f", 1.0f))
         {
-            if (planeRotZYX.z < f32_neg_90)
-                planeRotZYX.z = f32_neg_90;
-            else if (planeRotZYX.z > f32_pos_90)
-                planeRotZYX.z = f32_pos_90;
+            if (planeRotXYZ.z < f32_neg_90)
+                planeRotXYZ.z = f32_neg_90;
+            else if (planeRotXYZ.z > f32_pos_90)
+                planeRotXYZ.z = f32_pos_90;
         }
 
         ImGui::Separator();
