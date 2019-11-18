@@ -305,9 +305,9 @@ glm::mat3 rotateAroundAxis(const glm::vec3& axis, float angle)
     float one_costheta = 1.0f - costheta;
     
     return glm::mat3(
-            nx_squared*one_costheta + costheta,     nx_ny*one_costheta - sintheta*axis.z,   nx_nz*one_costheta + sintheta*axis.y,
-            nx_ny*one_costheta + sintheta*axis.z,   ny_squared*one_costheta + costheta,     ny_nz*one_costheta - sintheta*axis.x,
-            nx_nz*one_costheta - sintheta*axis.y,   ny_nz*one_costheta + sintheta*axis.x,   nz_squared*one_costheta + costheta);
+            nx_squared*one_costheta + costheta,     nx_ny*one_costheta + sintheta*axis.z,   nx_nz*one_costheta - sintheta*axis.y,
+            nx_ny*one_costheta - sintheta*axis.z,   ny_squared*one_costheta + costheta,     ny_nz*one_costheta + sintheta*axis.x,
+            nx_nz*one_costheta + sintheta*axis.y,   ny_nz*one_costheta - sintheta*axis.x,   nz_squared*one_costheta + costheta);
 }
 
 // required: 'shader' is active
@@ -419,9 +419,9 @@ void render()
         // plane
         // compute rotation transformation matrix for plane
         // rotate in sequence in order of XYZ (rotation around z happens first)
-        glm::mat3 orientation = rotateAroundAxis(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-planeRotXYZ.x)) *
-            rotateAroundAxis(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-planeRotXYZ.y)) *
-            rotateAroundAxis(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(-planeRotXYZ.z));
+        glm::mat3 orientation = rotateAroundAxis(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(planeRotXYZ.x)) *
+            rotateAroundAxis(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(planeRotXYZ.y)) *
+            rotateAroundAxis(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(planeRotXYZ.z));
         renderPlane_geometry(plane1, orientation, glm::vec3(0.0f, 0.6f, 0.7f), glm::vec3(0.0f, 0.8f, 1.0f));
 
         // x-axis
