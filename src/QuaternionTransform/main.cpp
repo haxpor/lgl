@@ -622,6 +622,13 @@ void renderGUI()
         ImGui::SliderFloat("Y", &targetFacingDir.y, -1.0f, 1.0f, "%.2f");
         ImGui::SliderFloat("Z", &targetFacingDir.z, -1.0f, 1.0f, "%.2f");
 
+        if (ImGui::Button("Reset"))
+        {
+            targetFacingDir.x = 0.0f;
+            targetFacingDir.y = 0.0f;
+            targetFacingDir.z = 1.0f;
+        }
+
         ImGui::TextDisabled("(?)");
         if (ImGui::IsItemHovered())
         {
