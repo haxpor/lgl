@@ -26,6 +26,7 @@
  *       glm::quat quatRotateBetweenVectors(const glm::vec3& start, const glm::vec3& end);
  *       glm::quat quatFromAxisAngle(float angle, const glm::vec3& dir);
  *       glm::mat3 quatToMat(const glm::quat& q);
+ *       glm::vec3 quatToEulerAngles(const glm::quat& q);
  *
  *  This demonstrate
  *      - how to use quaternion using glm
