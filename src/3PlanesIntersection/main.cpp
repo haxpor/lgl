@@ -163,7 +163,7 @@ glm::vec3 xAxis[2] = {
     glm::vec3(0.0f, 1.0f, 0.0f),
     glm::vec3(0.0f, -1.0f, 0.0f)
 };
-glm::vec3 yAxis[6] = {
+glm::vec3 yAxis[2] = {
     glm::vec3(-1.0f, 0.0f, 0.0f),
     glm::vec3(1.0f, 0.0f, 0.0f)
 };
