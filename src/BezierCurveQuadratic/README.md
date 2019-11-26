@@ -1,0 +1,3 @@
+# BezierCurveQuadratic
+
+![screenshot](screenshot.png)
