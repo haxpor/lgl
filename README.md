@@ -1,9 +1,14 @@
 # Build
 
-Some programs have their own separate `Makefile` in its directory, but most can be build using `make.sh`
-script as follows.
+Most examples (preferred "testbed") are self-contained and have their own separate `Makefile` in its directory,
+link against few shared source code in `src/../externals`.
 
-To build demo programs, `cd` to `src/` directory, then use `make.sh` script to do it as follows.
+Others, mostly inside `Misc` and
+other which only has main source file can be built via `make.sh` script.
+
+## Build via `make.sh`
+
+At the root directory level of this repo, Execute `./make.sh` like the following
 
 `./make.sh build <target .cpp file>`
 
@@ -13,6 +18,11 @@ for example
 
 it will produce `a.out` file at the root directory, run it with `./a.out`. Any resource it needs to
 access is inside `data` directory.
+
+It supprots following commands
+
+* `./make.sh build src/<directory>/<main-source-file.cpp>` - to build target source file, provided that main function is in this file
+* `./make.sh help` - print help message
 
 # Dependencies
 
@@ -25,13 +35,6 @@ Others
 
 * `glfw` - for window stuff
 * `glm` - for OpenGL Mathematics
-
-# make.sh
-
-Suport the following commands
-
-* `./make.sh build src/<directory>/<main-source-file.cpp>` - to build target source file, provided that main function is in this file
-* `./make.sh help` - print help message
 
 # Note
 
