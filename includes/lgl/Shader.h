@@ -22,6 +22,14 @@ public:
 
     /**
      * Build shader program for this shader.
+     * \param vertex shader code string as null-terminated string.
+     * \param fragment shader code string as null-terminated string.
+     * \return Return 0 for success, otherwise error occurs.
+     */
+    int BuildFromSrc(const char* vertexShaderStr, const char* fragmentShaderStr);
+
+    /**
+     * Build shader program for this shader.
      * \return Return 0 for success, otherwise error occurs.
      */
     int Build(const char* vertexPath, const char* fragmentPath);
