@@ -38,12 +38,9 @@ Others
 
 # Note
 
-All common source files/headers are inside `src/core`.
-
-Demo programs are a single source file for each, and located in `src/*.cpp`.
-
 * At the near end of completion of study (thus this project), `CMake` build script will be added for convenience in building all demo programs. For now, it makes no sense to incur having it while studying. Modify `make.sh` as needed for your system to make it work for the time being.
 * **Beware**: Tested only on Linux, technically should work the same on other platforms but might need slight modification on build script, or particular code. Also some sample make uses of symlink to get access to `../../data` conveniently.
+* Code is aimed to be as educational for studying purpose as first priority, so not all optimization detail will be handled, nor fully clean code will be architected.
 
 # License
 
