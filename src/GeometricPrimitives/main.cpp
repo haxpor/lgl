@@ -472,7 +472,7 @@ void renderGUI()
 
         // select which primitive to be drew on screen
         int ptypeInt = static_cast<int>(ptype);
-        if (ImGui::Combo("Type", &ptypeInt, "Line\0Plane\0Box\0Sphere\0Cylinder\0Cone"))
+        if (ImGui::Combo("Type", &ptypeInt, "Line\0Plane\0Box\0Sphere\0Cylinder\0Cone\0"))
         {
             // keep updating the value
             ptype = static_cast<PrimitiveType>(ptypeInt);
