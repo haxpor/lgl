@@ -17,9 +17,15 @@
 #include <GL/freeglut.h>
 #include <iostream>
 #include <cstdlib>
+#include <chrono>
+#include <iomanip>
 
 int screenWidth = 800;
 int screenHeight = 600;
+
+int numRenderedFrame = 0;
+float fps = 0.0f;
+std::chrono::steady_clock::time_point prevTime;
 
 ////////////////////////
 /// glut callback
@@ -153,6 +159,16 @@ void displayCB()
     glBindVertexArray(0);
 
     glutSwapBuffers();
+
+    ++numRenderedFrame;
+    std::chrono::steady_clock::time_point currTime = std::chrono::steady_clock::now();
+    std::chrono::duration<double> diffTime = std::chrono::duration_cast<std::chrono::duration<double>>(currTime - prevTime);
+    if (diffTime.count() >= 1.0f) {
+        fps = numRenderedFrame / diffTime.count();
+        std::cout << std::fixed << std::setprecision(2) << std::setfill('0') << fps << " FPS\n";
+        numRenderedFrame = 0;
+        prevTime = currTime;
+    }
 }
 
 void timerCB(int ms)
