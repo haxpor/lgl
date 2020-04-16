@@ -390,7 +390,7 @@ void renderGUI()
 void renderGizmo()
 {
     glViewport(0, 0, 100, 100);
-    glDepthFunc(GL_ALWAYS);
+    glClear(GL_DEPTH_BUFFER_BIT);
 
     gizmoShader.Use();
 
