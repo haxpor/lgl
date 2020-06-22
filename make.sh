@@ -26,6 +26,7 @@ if [ "$1" == "build" ]; then
     g++ -g -Wall -Wextra -pedantic -fno-exceptions -Wno-stringop-overflow -Wno-unused-parameter -std=c++11 \
         -Iexternals/glad/include \
         -Iexternals/stb_image \
+        -Iexternals/glm \
         -Iincludes \
         src/lgl/*.cpp \
         externals/glad/src/glad.c \

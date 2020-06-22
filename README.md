@@ -30,11 +30,11 @@ Included in `external/` directory
 
 * `glad` - generated from its webservice for OpenGL 3.3 API, Core profile (subject to be gradually added more API support later if need)
 * `stb_image` - for loading image asset
-
-Others
-
-* `glfw` - for window stuff
 * `glm` - for OpenGL Mathematics
+
+You need to install the following
+
+* `glfw` - for windowing stuff
 
 # Note
 
