@@ -34,7 +34,7 @@ Included in `external/` directory
 
 You need to install the following
 
-* `glfw` - for windowing stuff
+* `glfw` - for windowing stuff (package name `libglfw3-dev` for Debian-based/Ubuntu)
 
 # Note
 
