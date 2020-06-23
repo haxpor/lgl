@@ -124,7 +124,7 @@ void Gizmo::draw()
     glGetIntegerv(GL_VIEWPORT, prevViewport);
     // set viewport area
     glViewport(gizmoViewport[0], gizmoViewport[1], gizmoViewport[2], gizmoViewport[3]);
-    glDepthFunc(GL_ALWAYS);
+    glClear(GL_DEPTH_BUFFER_BIT);
 
     shader.Use();
 
@@ -212,7 +212,6 @@ void Gizmo::draw()
 
     // set opengl setting back to what's before this function call
     glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
-    glDepthFunc(GL_LESS);
 }
 
 void Gizmo::updateViewMatrix(const glm::mat4& view)

@@ -13,7 +13,7 @@ OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 
 CXX = g++
 CXXFLAGS = -g -Wall -Wextra -pedantic -fno-exceptions -Wno-stringop-overflow -Wno-unused-parameter -std=c++11
-CXXFLAGS += -I../../externals/glad/include -I../../externals/stb_image -I../../includes -I./
+CXXFLAGS += -I../../externals/glad/include -I../../externals/stb_image -I../../externals -I../../includes -I./
 CXXLDFLAGS = -lglfw -lGL -lX11 -lpthread -lm -ldl
 
 %.o:%.cpp

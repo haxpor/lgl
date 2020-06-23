@@ -94,7 +94,7 @@ public:
     void setLineData(const LineData&& ldata);
     const LineData& getLineData() const;
 
-    /// Required: attached shader needs to call Shader::User() before setting any of the following
+    /// Required: attached shader needs to call Shader::Use() before setting any of the following
     /// functions.
     void updateProjectionMatrix(const glm::mat4& mat);
     void updateViewMatrix(const glm::mat4& mat);
